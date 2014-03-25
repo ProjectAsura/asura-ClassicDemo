@@ -9,6 +9,7 @@
 //-------------------------------------------------------------------------------------------
 #include <iostream>
 #include <GL/glut.h>
+#include <RawLoader.h>
 
 
 namespace /* anonymous */ {
@@ -16,12 +17,14 @@ namespace /* anonymous */ {
 //-------------------------------------------------------------------------------------------
 // Global Variables
 //-------------------------------------------------------------------------------------------
-int     g_WindowPositionX   = 100;
-int     g_WindowPositionY   = 100;
-int     g_WindowWidth       = 512;
-int     g_WindowHeight      = 512;
-double  g_AspectRatio       = g_WindowWidth / g_WindowHeight;
-char    g_WindowTitle[]     = "First Polygon";
+int         g_WindowPositionX   = 100;
+int         g_WindowPositionY   = 100;
+int         g_WindowWidth       = 512;
+int         g_WindowHeight      = 512;
+double      g_AspectRatio       = g_WindowWidth / g_WindowHeight;
+char        g_WindowTitle[]     = "Texture Mapping (1) - Raw File -";
+
+RawImage    g_Texture;
 
 } // namespace /* anonymous */
 
@@ -77,6 +80,14 @@ bool OnInit()
     glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
     glEnable( GL_DEPTH_TEST );
 
+    char* filename = "../res/sample.raw"; // プロジェクトディレクトリからの相対パス.
+
+    if ( !g_Texture.Load( filename, 512, 512, false ) ) 
+    { return false; }
+
+    if ( !g_Texture.CreateGLTexture() )
+    { return false; }
+
     return true;
 }
 
@@ -85,6 +96,8 @@ bool OnInit()
 //-------------------------------------------------------------------------------------------
 void OnTerm( int code )
 {
+    g_Texture.Release();
+    g_Texture.DeleteGLTexture();
     std::exit( code );
 }
 
@@ -117,43 +130,28 @@ void OnDisplay()
     // バッファをクリア.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    // ビューポートの設定.
-    glViewport( 0, 0, g_WindowWidth, g_WindowHeight );
+    //　テクスチャマッピング有効化
+    glEnable(GL_TEXTURE_2D);
+    //　テクスチャをバインド
+    glBindTexture(GL_TEXTURE_2D, g_Texture.GetID());
+    //　色の指定
+    glColor4f(1.0, 1.0, 1.0, 1.0);
 
-    // 射影行列の設定.
-    glMatrixMode( GL_PROJECTION );
-    // 単位行列で初期化.
-    glLoadIdentity();
-    // 射影行列を設定.
-    gluPerspective( 45.0, g_AspectRatio, 0.1, 1000.0 );
-
-    // ワールドビュー行列の設定.
-    glMatrixMode( GL_MODELVIEW );
-    // 単位行列で初期化.
-    glLoadIdentity();
-
-    // 視点の設定
-    gluLookAt( 
-        0.0, 0.0, -5.0,      // カメラ位置.
-        0.0, 0.0,  0.0,      // カメラの注視点.
-        0.0, 1.0,  0.0 );    // カメラの上向きベクトル.
-
-    // 三角形ポリゴンを描画.
-    glBegin(GL_TRIANGLES);
+    //　四角形をテクスチャ座標つきで描画
+    glBegin(GL_QUADS);
     {
-        // 頂点1
-        glColor3d ( 1.0, 1.0, 0.0 );
-        glVertex3d( 0.0, 0.825, 0.0 );
-
-        // 頂点2
-        glColor3d (  0.0,  1.0, 1.0 );
-        glVertex3d( -1.0, -0.825, 0.0 );
-
-        // 頂点3
-        glColor3d ( 1.0,  0.0, 1.0 );
-        glVertex3d( 1.0, -0.825, 0.0 );
+        double size = 0.5;
+        glTexCoord2d( -1.0, 1.0 );     glVertex3d( -size, -size, 0.0 );
+        glTexCoord2d( -1.0, 0.0 );     glVertex3d( -size,  size, 0.0 );
+        glTexCoord2d(  0.0, 0.0 );     glVertex3d(  size,  size, 0.0 );
+        glTexCoord2d(  0.0, 1.0 );     glVertex3d(  size, -size, 0.0 );
     }
     glEnd();
+
+    // テクスチャをアンバインド.
+    glBindTexture(GL_TEXTURE_2D, 0);
+    //　テクスチャマッピング無効化
+    glDisable(GL_TEXTURE_2D);
 
     // コマンドを実行して，バッファを交換.
     glutSwapBuffers();
