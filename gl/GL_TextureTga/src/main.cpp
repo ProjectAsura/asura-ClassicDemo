@@ -9,7 +9,7 @@
 //-------------------------------------------------------------------------------------------
 #include <iostream>
 #include <GL/glut.h>
-#include <RawLoader.h>
+#include <TgaLoader.h>
 
 
 namespace /* anonymous */ {
@@ -22,9 +22,9 @@ int         g_WindowPositionY   = 100;
 int         g_WindowWidth       = 512;
 int         g_WindowHeight      = 512;
 double      g_AspectRatio       = g_WindowWidth / g_WindowHeight;
-char        g_WindowTitle[]     = "Texture Mapping (1) - Raw File -";
+char        g_WindowTitle[]     = "Texture Mapping (2) - Tga File -";
 
-RawImage    g_Texture;
+TgaImage    g_Texture;
 
 } // namespace /* anonymous */
 
@@ -80,9 +80,9 @@ bool OnInit()
     glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
     glEnable( GL_DEPTH_TEST );
 
-    char* filename = "../res/sample.raw"; // プロジェクトディレクトリからの相対パス.
+    char* filename = "../res/sample.tga"; // プロジェクトディレクトリからの相対パス.
 
-    if ( !g_Texture.Load( filename, 512, 512, false ) ) 
+    if ( !g_Texture.Load( filename ) ) 
     { return false; }
 
     if ( !g_Texture.CreateGLTexture() )
@@ -131,9 +131,9 @@ void OnDisplay()
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     //　テクスチャマッピング有効化
-    glEnable( GL_TEXTURE_2D );
+    glEnable(GL_TEXTURE_2D);
     //　テクスチャをバインド
-    glBindTexture( GL_TEXTURE_2D, g_Texture.GetID() );
+    glBindTexture(GL_TEXTURE_2D, g_Texture.GetID());
     //　色の指定
     glColor4f(1.0, 1.0, 1.0, 1.0);
 
@@ -141,17 +141,17 @@ void OnDisplay()
     glBegin(GL_QUADS);
     {
         double size = 0.5;
-        glTexCoord2d( 0.0, 1.0 );     glVertex3d( -size, -size, 0.0 );
-        glTexCoord2d( 0.0, 0.0 );     glVertex3d( -size,  size, 0.0 );
-        glTexCoord2d( 1.0, 0.0 );     glVertex3d(  size,  size, 0.0 );
-        glTexCoord2d( 1.0, 1.0 );     glVertex3d(  size, -size, 0.0 );
+        glTexCoord2d( 0.0, 0.0 );     glVertex3d( -size, -size, 0.0 );
+        glTexCoord2d( 0.0, 1.0 );     glVertex3d( -size,  size, 0.0 );
+        glTexCoord2d( 1.0, 1.0 );     glVertex3d(  size,  size, 0.0 );
+        glTexCoord2d( 1.0, 0.0 );     glVertex3d(  size, -size, 0.0 );
     }
     glEnd();
 
     // テクスチャをアンバインド.
-    glBindTexture( GL_TEXTURE_2D, 0 );
+    glBindTexture(GL_TEXTURE_2D, 0);
     //　テクスチャマッピング無効化
-    glDisable( GL_TEXTURE_2D );
+    glDisable(GL_TEXTURE_2D);
 
     // コマンドを実行して，バッファを交換.
     glutSwapBuffers();

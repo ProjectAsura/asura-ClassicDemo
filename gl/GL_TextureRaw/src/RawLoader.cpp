@@ -26,7 +26,7 @@ RawImage::RawImage()
 , m_InternalFormat  ( 0 )
 , m_Width           ( 0 )
 , m_Height          ( 0 )
-, m_BitPerPixel     ( 0 )
+, m_BytePerPixel    ( 0 )
 , m_ID              ( 0 )
 , m_pImageData      ( nullptr )
 { /* DO_NOTHING */ }
@@ -54,7 +54,7 @@ void RawImage::Release()
     m_InternalFormat = 0;
     m_Width          = 0;
     m_Height         = 0;
-    m_BitPerPixel    = 0;
+    m_BytePerPixel   = 0;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -84,21 +84,21 @@ bool RawImage::Load
 
     if ( alphaFlag )
     {
-        m_BitPerPixel    = 4;
-        m_ImageSize      = m_Width * m_Height * m_BitPerPixel;
+        m_BytePerPixel   = 4;
+        m_ImageSize      = m_Width * m_Height * m_BytePerPixel;
         m_Format         = GL_RGBA;
         m_InternalFormat = GL_RGBA;
     }
     else
     {
-        m_BitPerPixel    = 3;
-        m_ImageSize      = m_Width * m_Height * m_BitPerPixel;
+        m_BytePerPixel   = 3;
+        m_ImageSize      = m_Width * m_Height * m_BytePerPixel;
         m_Format         = GL_RGB;
         m_InternalFormat = GL_RGB;
     }
 
     // メモリ確保.
-    m_pImageData = new(std::nothrow) GLubyte [m_ImageSize];
+    m_pImageData = new(std::nothrow) unsigned char [m_ImageSize];
     if ( m_pImageData == nullptr )
     {
         std::cerr << "Error : Memory Allocate Faied." << std::endl;
@@ -129,7 +129,7 @@ bool RawImage::CreateGLTexture()
     //　テクスチャをバインドする
     glBindTexture(GL_TEXTURE_2D, m_ID);
 
-    if ( m_BitPerPixel == 4 )
+    if ( m_BytePerPixel == 4 )
     { glPixelStorei(GL_UNPACK_ALIGNMENT, 4); }
     else 
     { glPixelStorei(GL_UNPACK_ALIGNMENT, 1); }
