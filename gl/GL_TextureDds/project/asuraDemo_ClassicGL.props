@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(ProjectDir)bin\vs2012\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\vs2012\$(PlatformShortName)\$(Configuration)\</IntDir>
+    <ExecutablePath>$(ProjectDir)..\external\freeglut-2.8.1\lib\vs2012\$(PlatformShortName);$(ProjectDir)..\external\glew-1.10.0\bin\Release\$(PlatformShortName);$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(ProjectDir)..\external\freegult-2.8.1\include;$(ProjectDir)..\external\glew-1.10.0\include;$(ProjectDir)..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\external\freeglut-2.8.1\lib\vs2012\$(PlatformShortName);$(ProjectDir)..\external\glew-1.10.0\lib\Release\$(PlatformShortName);$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\external\freeglut-2.8.1\lib\vs2012\$(PlatformShortName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)..\external\freegult-2.8.1\lib\vs2012\$(PlatformShortName)\freeglut_static.lib;$(ProjectDir)..\external\glew-1.10.0\lib\Release\$(PlatformShortName)\glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
