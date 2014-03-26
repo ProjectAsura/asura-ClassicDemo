@@ -1,6 +1,6 @@
 //-------------------------------------------------------------------------------------------
-// File : TgaLoader.cpp
-// Desc : Targa Texture Loader.
+// File : BmpLoader.cpp
+// Desc : Bitmap Texture Loader.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------
 
@@ -9,31 +9,42 @@
 //-------------------------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
-#include <TgaLoader.h>
+#include <BmpLoader.h>
 #include <GL/glut.h>
 
 
 namespace /* anonymous */ {
 
-#pragma pack(push, 1)   // パディングでサイズがずれるのを防ぐ.
+#pragma pack(push, 1 )
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// TgaHeader structure
+// BmpInfoHeader structure
 /////////////////////////////////////////////////////////////////////////////////////////////
-struct TgaHeader
+struct BmpInfoHeader
 {
-    unsigned char   IDLength;           //!< IDの長さ.
-    unsigned char   ColorMapType;       //!< カラーマップタイプ.
-    unsigned char   ImageType;          //!< イメージタイプ.
-    unsigned short  ColorMapOrigin;     //!< 最初のカラーマップエントリーのインデックス.
-    unsigned short  ColorMapLength;     //!< カラーマップエントリーの数.
-    unsigned char   ColorMapDepth;      //!< 各カラーマップエントリーのビット数.
-    unsigned short  ImageOriginX;       //!< 画像の原点(X方向).
-    unsigned short  ImageOriginY;       //!< 画像の原点(Y方向).
-    unsigned short  ImageWidth;         //!< 画像の横幅.
-    unsigned short  ImageHeight;        //!< 画像の縦幅.
-    unsigned char   BitPerPixel;        //!< 1ピクセル当たりのビット数.
-    unsigned char   Descriptor;         //!< 記述子.
+    unsigned int    biSize;
+    long            biWidth;
+    long            biHeight;
+    unsigned short  biPlanes;
+    unsigned short  biBitCount;
+    unsigned int    biCompression;
+    unsigned int    biSizeImage;
+    long            biXPelsPerMeter;
+    long            biYPelsPerMeter;
+    unsigned int    biClrUsed;
+    unsigned int    biClrImportant;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// BmpFileHeader structure
+/////////////////////////////////////////////////////////////////////////////////////////////
+struct BmpFileHeader
+{
+    unsigned short  bfType;
+    unsigned int    bfSize;
+    unsigned short  bfReserved1;
+    unsigned short  bfReserved2;
+    unsigned int    bfOffBits;
 };
 
 #pragma pack(pop)
@@ -42,13 +53,13 @@ struct TgaHeader
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// TgaImage class
+// BmpImage class
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------
-TgaImage::TgaImage()
+BmpImage::BmpImage()
 : m_ImageSize       ( 0 )
 , m_Format          ( 0 )
 , m_InternalFormat  ( 0 )
@@ -63,13 +74,13 @@ TgaImage::TgaImage()
 //-------------------------------------------------------------------------------------------
 //      デストラクタです.
 //-------------------------------------------------------------------------------------------
-TgaImage::~TgaImage()
+BmpImage::~BmpImage()
 { Release(); }
 
 //-------------------------------------------------------------------------------------------
 //      解放処理を行います.
 //-------------------------------------------------------------------------------------------
-void TgaImage::Release()
+void BmpImage::Release()
 {
     if ( m_pImageData )
     {
@@ -88,64 +99,63 @@ void TgaImage::Release()
 //-------------------------------------------------------------------------------------------
 //      読み込み処理を行います.
 //-------------------------------------------------------------------------------------------
-bool TgaImage::Load(const char *filename)
+bool BmpImage::Load(const char *filename)
 {
     FILE *fp;
-    TgaHeader header;
 
-    //　ファイルを開く
-    errno_t err = fopen_s( &fp, filename, "rb");
+    BmpInfoHeader infoHeader;
+    BmpFileHeader header;
+
+    // ファイルを開く
+    errno_t err = fopen_s( &fp, filename, "rb" );
     if ( err != 0 )
     {
-        std::cerr << "Error : File Open Failed" << std::endl;
+        std::cerr << "Error : File Open Failed.";
         std::cerr << "File Name : " << filename << std::endl;
         return false;
     }
 
-    //　ヘッダー情報の読み込み
-    fread(&header, sizeof(header), 1, fp);
+    // ヘッダー情報の読み取り
+    fread( &header, sizeof(header), 1, fp );
 
-    //　幅と高さを決める
-    m_Width  = header.ImageWidth;
-    m_Height = header.ImageHeight;
-
-    //　24 bit
-    if ( header.BitPerPixel == 24 )
+    // ファイルチェック
+    if ( header.bfType != 0x4d42 )
     {
-        m_Format = GL_RGB;
-        m_InternalFormat = GL_RGB;
-    }
-    //　32 bit
-    else if ( header.BitPerPixel == 32 )
-    {
-        m_Format = GL_RGBA;
-        m_InternalFormat = GL_RGBA;
-    }
-    else
-    {
-        std::cerr << "Error : Unexpected Data." << std::endl;
+        std::cerr << "Error : Invalid File";
+        fclose(fp);
         return false;
     }
 
-    // 1ピクセル当たりのバイト数.
-    m_BytePerPixel = header.BitPerPixel / 8;
+    // ヘッダー情報の読み取り
+    fread( &infoHeader, sizeof(infoHeader), 1, fp );
 
-    //　データサイズの決定
-    m_ImageSize = m_Width * m_Height * m_BytePerPixel;
+    if ( infoHeader.biSizeImage == 0 )
+    { infoHeader.biSizeImage = infoHeader.biWidth * infoHeader.biHeight * 3; }
 
-    //　メモリを確保
-    m_pImageData = new(std::nothrow) unsigned char[ m_ImageSize ];
+    // 進める.
+    fseek( fp, header.bfOffBits, SEEK_SET );
+
+    //　データサイズを決定し，メモリを確保
+    m_ImageSize  = infoHeader.biSizeImage;
+    m_pImageData = new(std::nothrow) unsigned char [m_ImageSize];
     if ( m_pImageData == nullptr )
     {
-        std::cerr << "Error : Memory Allocacte Failed." << std::endl;
+        std::cerr << "Error : Memory Allocate Failed." << std::endl;
         fclose( fp );
         return false;
     }
 
-    //　テクセルデータを一気に読み取り
-    fread( m_pImageData, sizeof(unsigned char), m_ImageSize, fp );
+    // データを設定.
+    m_Width          = infoHeader.biWidth;
+    m_Height         = infoHeader.biHeight;
+    m_BytePerPixel   = 3;
+    m_Format         = GL_RGB;
+    m_InternalFormat = GL_RGB;
 
-    //　BGR(A)をRGB(A)にコンバート
+    //　ピクセルデータの読み込み
+    fread( m_pImageData, 1, infoHeader.biSizeImage, fp );
+
+    //　BGR → RGBに変換
     for ( unsigned int i=0; i<m_ImageSize; i+=m_BytePerPixel )
     {
         unsigned char    temp = m_pImageData[ i + 0 ];
@@ -163,7 +173,7 @@ bool TgaImage::Load(const char *filename)
 //-------------------------------------------------------------------------------------------
 //      テクスチャを生成します.
 //-------------------------------------------------------------------------------------------
-bool TgaImage::CreateGLTexture()
+bool BmpImage::CreateGLTexture()
 {
     if ( m_pImageData == nullptr )
     { return false; }
@@ -205,7 +215,7 @@ bool TgaImage::CreateGLTexture()
 //-------------------------------------------------------------------------------------------
 //      テクスチャを破棄します.
 //-------------------------------------------------------------------------------------------
-void TgaImage::DeleteGLTexture()
+void BmpImage::DeleteGLTexture()
 {
     if ( m_ID )
     {
@@ -217,5 +227,5 @@ void TgaImage::DeleteGLTexture()
 //-------------------------------------------------------------------------------------------
 //      テクスチャIDを取得します.
 //-------------------------------------------------------------------------------------------
-unsigned int TgaImage::GetID() const
+unsigned int BmpImage::GetID() const
 { return m_ID; }
