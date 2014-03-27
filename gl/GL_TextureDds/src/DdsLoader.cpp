@@ -116,6 +116,13 @@ typedef struct __DDColorKey
     unsigned int    hight;
 } DDColorKey;
 
+typedef struct _DDSCaps
+{
+	unsigned int caps;
+	unsigned int caps2;
+	unsigned int caps3;
+	unsigned int caps4;
+} DDSCaps;
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // DDSurfaceDesc structure
@@ -138,12 +145,14 @@ typedef struct __DDSurfaceDesc
     DDColorKey      ckSrcOverlay;
     DDColorKey      ckSrcBit;
 
-    DDPixelFormat   pixelFormat;
-    unsigned int    caps;
-    unsigned int    caps2;
-    unsigned int    reservedCaps[ 2 ];
+    DDPixelFormat   format;
+//	DDSCaps         caps;
+    unsigned int caps;
+    unsigned int caps2;
+    unsigned int caps3;
+    unsigned int caps4;
 
-    unsigned int    textureStage;
+	unsigned int textureStage;
 } DDSurfaceDesc;
 
 
@@ -202,10 +211,10 @@ void DdsImage::Release()
 //-------------------------------------------------------------------------------------------
 bool DdsImage::Load(const char *filename)
 {
-    FILE* fp;
+    FILE *fp;
 
-    // ファイルを開く.
-    errno_t err = fopen_s( &fp, filename, "rb" );
+    //　ファイルを開く
+    errno_t err = fopen_s(&fp,filename, "rb");
     if ( err != 0 )
     {
         ELOG( "Error : File Open Failed. FileName = %s", filename );
@@ -225,13 +234,14 @@ bool DdsImage::Load(const char *filename)
         return false;
     }
 
-    // サーフェイスデスクリプターを読み込み.
     DDSurfaceDesc ddsd;
+
+    //　ヘッダーを読み取り
     fread( &ddsd, sizeof(ddsd), 1, fp );
 
-    // サイズを設定.
-    m_Width       = ddsd.width;
+    //　幅・高さを格納
     m_Height      = ddsd.height;
+    m_Width       = ddsd.width;
     m_MipmapCount = 1;
 
     if ( ddsd.flags & DDSD_MIPMAPCOUNT )
@@ -259,87 +269,79 @@ bool DdsImage::Load(const char *filename)
     // BC圧縮のタイプを調べる.
     if ( ddsd.flags & DDSD_PIXELFORMAT )
     {
-        if ( ddsd.pixelFormat.flags & DDPF_FOURCC )
+        if ( ddsd.format.flags & DDPF_FOURCC )
         {
-            switch( ddsd.pixelFormat.fourCC )
+            //　フォーマット判別
+            switch ( ddsd.format.fourCC )
             {
-            case FOURCC_DXT1:
-                {
-                    isFind = true;
-                    m_Format         = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-                    m_InternalFormat = COMPRESS_TYPE_DXT1;
-                    m_Format         = GL_RGBA;
-                    m_BytePerPixel   = 8;
-                }
-                break;
+                case FOURCC_DXT1:
+                    {
+                        m_Format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                        m_InternalFormat = GL_RGBA;
+                        isFind = true;
+                    }
+                    break;
 
-            case FOURCC_DXT2:
-                {
-                    isFind = true;
-                    m_Format         = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-                    m_InternalFormat = COMPRESS_TYPE_DXT1;
-                    m_Format         = GL_RGBA;
-                    m_BytePerPixel   = 16;
-                }
-                break;
+                case FOURCC_DXT2:
+                    {
+                        m_Format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                        m_InternalFormat = GL_RGBA;
+                        isFind = true;
+                    }
+                    break;
 
-            case FOURCC_DXT3:
-                {
-                    isFind = true;
-                    m_Format         = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-                    m_InternalFormat = COMPRESS_TYPE_DXT3;
-                    m_Format         = GL_RGB;
-                    m_BytePerPixel   = 16;
-                }
-                break;
+                case FOURCC_DXT3:
+                    {
+                        m_Format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                        m_InternalFormat = GL_RGBA;
+                        isFind = true;
+                    }
+                    break;
 
-            case FOURCC_DXT4:
-                {
-                    isFind = true;
-                    m_Format         = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-                    m_InternalFormat = COMPRESS_TYPE_DXT3;
-                    m_Format         = GL_RGBA;
-                    m_BytePerPixel   = 16;
-                }
-                break;
+                case FOURCC_DXT4:
+                    {
+                        m_Format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                        m_InternalFormat = GL_RGBA;
+                        isFind = true;
+                    }
+                    break;
 
-            case FOURCC_DXT5:
-                {
-                    isFind = true;
-                    m_Format         = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-                    m_InternalFormat = COMPRESS_TYPE_DXT5;
-                    m_Format         = GL_RGB;
-                    m_BytePerPixel   = 16;
-                }
-                break;
+                case FOURCC_DXT5:
+                    {
+                        m_Format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                        m_InternalFormat = GL_RGBA;
+                        isFind = true;
+                    }
+                    break;
 
-            default:
-                {
-                    ELOG( "Error : Unsupported Format. Please use DXT1, DXT3, DXT5 format." );
-                    fclose( fp );
-                    return false;
-                }
+                default:
+                    {
+                        ELOG( "Error : Unsupported Format. fourCC = %d", ddsd.format.fourCC );
+                        fclose( fp );
+                        return false;
+                    }
+                    break;
             }
         }
     }
 
     if ( !isFind )
     {
-        ELOG( "Error : Invalid Format." );
+        ELOG( "Error : Unsupported format" );
         fclose( fp );
         return false;
     }
 
-    long curr = 0;
-    long end  = 0;
-
-    curr = ftell( fp );
+    long curr = ftell(fp);
     fseek( fp, 0, SEEK_END );
-    end  = ftell( fp );
+    long end = ftell(fp);
     fseek( fp, curr, SEEK_SET );
 
-    m_ImageSize = end - curr;
-    m_pImageData = new (std::nothrow) unsigned char [ m_ImageSize ];
+    //　テクセルデータのサイズを算出
+    m_ImageSize = unsigned int( end - curr );
+
+    // メモリを確保.
+    m_pImageData = new(std::nothrow) unsigned char [ m_ImageSize ];
     if ( m_pImageData == nullptr )
     {
         ELOG( "Error : Memory Allocate Failed." );
@@ -347,10 +349,10 @@ bool DdsImage::Load(const char *filename)
         return false;
     }
 
-    // 一気に読み込み.
+    //　ピクセルデータの読み込み
     fread( m_pImageData, sizeof(unsigned char), m_ImageSize, fp );
 
-    // ファイルを閉じる.
+    //　ファイルを閉じる
     fclose( fp );
 
     // 正常終了.
@@ -365,30 +367,28 @@ bool DdsImage::CreateGLTexture()
     if ( m_pImageData == nullptr )
     { return false; }
 
-    if ( glewInit() != GLEW_OK )
-    {
-        ELOG( "Error : GLEW Initialize Failed." );
-        return false;
-    }
+    glEnable( GL_TEXTURE_2D );
 
     //　テクスチャを生成
     glGenTextures(1, &m_ID);
 
     //　テクスチャをバインドする
-    glBindTexture(GL_TEXTURE_2D, m_ID);
+    glBindTexture( GL_TEXTURE_2D, m_ID );
 
     //　拡大・縮小する方法の指定
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
     //　テクスチャ環境の設定
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 
     //　解凍作業
     DecompressBC();
 
     // アンバインドしておく.
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture( GL_TEXTURE_2D, 0 );
+
+    glDisable( GL_TEXTURE_2D );
 
     // 正常終了.
     return true;
@@ -416,7 +416,7 @@ void DdsImage::DecompressBC()
     //　解凍
     for ( unsigned int i=0; i<m_MipmapCount; i++ )
     {
-        size = ( (w+3)/4 ) * ( (h+3)/4 ) * blockSize;
+        size = ( ( w + 3 ) / 4 ) * ( ( h + 3 ) / 4 ) * blockSize;
         glCompressedTexImage2D( GL_TEXTURE_2D, int(i), m_Format, w, h, 0, size, m_pImageData + offset );
 
         w = ( w >> 1 );

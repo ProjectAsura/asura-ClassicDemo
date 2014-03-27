@@ -8,6 +8,7 @@
 // Includes
 //-------------------------------------------------------------------------------------------
 #include <iostream>
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include <DdsLoader.h>
 
@@ -77,6 +78,9 @@ int main( int argc, char** argv )
 //-------------------------------------------------------------------------------------------
 bool OnInit()
 {
+    if ( glewInit() != GLEW_OK )
+    { return false; }
+
     glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
     glEnable( GL_DEPTH_TEST );
 
@@ -141,10 +145,10 @@ void OnDisplay()
     glBegin(GL_QUADS);
     {
         double size = 0.5;
-        glTexCoord2d( 0.0, 0.0 );     glVertex3d( -size, -size, 0.0 );
-        glTexCoord2d( 0.0, 1.0 );     glVertex3d( -size,  size, 0.0 );
-        glTexCoord2d( 1.0, 1.0 );     glVertex3d(  size,  size, 0.0 );
-        glTexCoord2d( 1.0, 0.0 );     glVertex3d(  size, -size, 0.0 );
+        glTexCoord2d( 0.0, 1.0 );     glVertex3d( -size, -size, 0.0 );
+        glTexCoord2d( 0.0, 0.0 );     glVertex3d( -size,  size, 0.0 );
+        glTexCoord2d( 1.0, 0.0 );     glVertex3d(  size,  size, 0.0 );
+        glTexCoord2d( 1.0, 1.0 );     glVertex3d(  size, -size, 0.0 );
     }
     glEnd();
 
