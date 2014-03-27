@@ -116,13 +116,6 @@ typedef struct __DDColorKey
     unsigned int    hight;
 } DDColorKey;
 
-typedef struct _DDSCaps
-{
-	unsigned int caps;
-	unsigned int caps2;
-	unsigned int caps3;
-	unsigned int caps4;
-} DDSCaps;
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // DDSurfaceDesc structure
@@ -146,15 +139,35 @@ typedef struct __DDSurfaceDesc
     DDColorKey      ckSrcBit;
 
     DDPixelFormat   format;
-//	DDSCaps         caps;
-    unsigned int caps;
-    unsigned int caps2;
-    unsigned int caps3;
-    unsigned int caps4;
+    unsigned int    caps;
+    unsigned int    caps2;
+    unsigned int    caps3;
+    unsigned int    caps4;
 
 	unsigned int textureStage;
 } DDSurfaceDesc;
 
+
+//-------------------------------------------------------------------------------------------
+//      マスクをチェックします.
+//-------------------------------------------------------------------------------------------
+bool CheckMask
+(
+    const DDPixelFormat& pixelFormat,
+    unsigned int maskR,
+    unsigned int maskG,
+    unsigned int maskB,
+    unsigned int maskA
+)
+{
+    if ( ( pixelFormat.maskR == maskR )
+      && ( pixelFormat.maskG == maskG )
+      && ( pixelFormat.maskB == maskB )
+      && ( pixelFormat.maskA == maskA ) )
+    { return true; }
+
+    return false;
+}
 
 
 } // namespace /* anonymous */
@@ -314,17 +327,194 @@ bool DdsImage::Load(const char *filename)
                     }
                     break;
 
+                case FOURCC_ATI1:
+                case FOURCC_BC4U:
+                    {
+                        m_Format = GL_COMPRESSED_RED_RGTC1_EXT;
+                        m_InternalFormat = GL_R;
+                        isFind = true;
+                    }
+                    break;
+
+                case FOURCC_BC4S:
+                    {
+                        m_Format = GL_COMPRESSED_SIGNED_RED_RGTC1_EXT;
+                        m_InternalFormat = GL_R;
+                        isFind = true;
+                    }
+                    break;
+
+                case FOURCC_ATI2:
+                case FOURCC_BC5U:
+                    {
+                        m_Format = GL_COMPRESSED_RED_GREEN_RGTC2_EXT;
+                        m_InternalFormat = GL_RG;
+                        isFind = true;
+                    }
+                    break;
+
+                case FOURCC_BC5S:
+                    {
+                        m_Format = GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT;
+                        m_InternalFormat = GL_RG;
+                        isFind = true;
+                    }
+                    break;
+
+                //case FOURCC_DX10:
+                //    {
+                //    }
+                //    break;
+
+                //case 36 : // D3DFMT_A16B16G16R16
+                //    {
+                //    }
+                //    break;
+
+                //case 110: // D3DFMT_Q16W16V16U16
+                //    {
+                //    }
+                //    break;
+
+                //case 111: // D3DFMT_R16F
+                //    {
+                //    }
+                //    break;
+
+                //case 112: // D3DFMT_G16G16F
+                //    {
+                //    }
+                //    break;
+
+                //case 113: // D3DFMT_A16B16G16R16F
+                //    {
+                //    }
+                //    break;
+
+                //case 114: // D3DFMT_R32F
+                //    {
+                //    }
+                //    break;
+
+                //case 115: // D3DFMT_G32R32F
+                //    {
+                //    }
+                //    break;
+
+                //case 116: // D3DFMT_A32B32G32R32F
+                //    {
+                //    }
+                //    break;
+
                 default:
                     {
-                        ELOG( "Error : Unsupported Format. fourCC = %d", ddsd.format.fourCC );
-                        fclose( fp );
-                        return false;
+                        isFind = false;
                     }
                     break;
             }
         }
-    }
+        //else if ( ddsd.format.flags & DDPF_RGB )
+        //{
+        //    switch( ddsd.format.bpp )
+        //    {
+        //    case 32:
+        //        {
+        //            if ( CheckMask( ddsd.format, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000 ) )
+        //            {
+        //                // A8 R8 G8 B8
+        //            }
 
+        //            if ( CheckMask( ddsd.format, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 ) )
+        //            {
+        //                // A8 B8 G8 R8
+        //            }
+
+        //            if ( CheckMask( ddsd.format, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000 ) )
+        //            {
+        //                // X8 R8 G8 B8
+        //            }
+
+        //            if ( CheckMask( ddsd.format, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000 ) )
+        //            {
+        //                // X8 B8 G8 R8
+        //            }
+
+        //            if ( CheckMask( ddsd.format, 0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000 ) )
+        //            {
+        //                // R10 G10 B10 A2
+        //            }
+
+        //            if ( CheckMask( ddsd.format, 0x0000ffff, 0xffff0000, 0x00000000, 0x00000000 ) )
+        //            {
+        //                // R16 G16
+        //            }
+        //            if ( CheckMask( ddsd.format, 0xffffffff, 0x00000000,0x00000000,0x00000000 ) )
+        //            {
+        //                // R32
+        //            }
+        //        }
+        //        break;
+
+        //    case 24:
+        //        {
+        //            /* NOT_SUPPORT */
+        //        }
+        //        break;
+
+        //    case 16:
+        //        {
+        //            if ( CheckMask( ddsd.format, 0x7c00, 0x03e0, 0x001f, 0x8000 ) )
+        //            {
+        //                // B5 G5 R5 A1
+        //            }
+
+        //            if ( CheckMask( ddsd.format, 0xf800, 0x07e0, 0x001f, 0x0000 ) )
+        //            {
+        //                // B5 G6 R5
+        //            }
+        //        }
+        //        break;
+        //    }
+        //}
+        //else if ( ddsd.format.flags & DDPF_LUMINANCE )
+        //{
+        //    switch( ddsd.format.bpp )
+        //    {
+        //    case 8:
+        //        {
+        //            if ( CheckMask( ddsd.format, 0x000000ff, 0x00000000, 0x00000000, 0x00000000 ) )
+        //            {
+        //                // R8
+        //            }
+        //        }
+        //        break;
+
+        //    case 16:
+        //        {
+        //            if ( CheckMask( ddsd.format, 0x0000ffff, 0x00000000, 0x00000000, 0x00000000 ) )
+        //            {
+        //                // R16
+        //            }
+
+        //            if ( CheckMask( ddsd.format, 0x000000ff, 0x00000000, 0x00000000, 0x0000ff00 ) )
+        //            {
+        //                // R8 G8
+        //            }
+        //        }
+        //        break;
+        //    }
+        //}
+        //else if ( ddsd.format.flags & DDPF_ALPHA )
+        //{
+        //    if ( 8 == ddsd.format.bpp )
+        //    {
+        //        // A8
+        //    }
+        //}
+    }
+        
+
+    // BC圧縮以外は非サポートのためエラー扱い.
     if ( !isFind )
     {
         ELOG( "Error : Unsupported format" );
@@ -406,10 +596,12 @@ void DdsImage::DecompressBC()
     int w = m_Width;
     int h = m_Height;
 
-    //　DXT1
-    if ( m_Format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT )
+    //　BC1, BC4の場合.
+    if ( ( m_Format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT )
+      || ( m_Format == GL_COMPRESSED_SIGNED_RED_RGTC1_EXT )
+      || ( m_Format == GL_COMPRESSED_RED_RGTC1_EXT ) )
     { blockSize = 8; }
-    //　DXT3, DXT5
+    //　BC2, BC3, BC5, BC6H, BC7の場合.
     else
     { blockSize = 16; }
 
