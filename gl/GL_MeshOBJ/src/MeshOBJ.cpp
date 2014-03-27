@@ -16,112 +16,104 @@
 #include <iostream>
 
 
+//-------------------------------------------------------------------------------------------
+// Macros
+//-------------------------------------------------------------------------------------------
 #ifndef SAFE_DELETE_ARRAY
 #define SAFE_DELETE_ARRAY( x ) { if ( x ) { delete[] (x); (x) = nullptr; } }
 #endif//SAFE_DELETE_ARRAY
 
+
 namespace /* anonymous */ {
 
-//-----------------------------------------------------------------------
-// Name : InitMaterial()
-// Desc : マテリアルの初期化
-//-----------------------------------------------------------------------
-void InitMaterial( OBJMATERIAL* pMaterial )
+//-------------------------------------------------------------------------------------------
+//      マテリアルの初期化を行います.
+//-------------------------------------------------------------------------------------------
+void InitMaterial( Material& material )
 {
-    memset( pMaterial, 0, sizeof( OBJMATERIAL ) );
-    pMaterial->ambient   = Vec3( 0.2f, 0.2f, 0.2f );
-    pMaterial->diffuse   = Vec3( 0.8f, 0.8f, 0.8f );
-    pMaterial->specular  = Vec3( 1.0f, 1.0f, 1.0f );
-    pMaterial->shininess = 0.0f;
-    pMaterial->alpha     = 1.0f;
+    memset( &material, 0, sizeof( material ) );
+    material.ambient   = Vec3( 0.2f, 0.2f, 0.2f );
+    material.diffuse   = Vec3( 0.8f, 0.8f, 0.8f );
+    material.specular  = Vec3( 1.0f, 1.0f, 1.0f );
+    material.shininess = 0.0f;
+    material.alpha     = 1.0f;
 }
 
-//-----------------------------------------------------------------------
-// Name : SetMaterial()
-// Desc : マテリアルを設定する
-//-----------------------------------------------------------------------
-void SetMaterial( OBJMATERIAL* pMaterial )
+//-------------------------------------------------------------------------------------------
+//      マテリアルを設定します.
+//-------------------------------------------------------------------------------------------
+void SetMaterial( const Material& material )
 {
-    glColor4f( pMaterial->diffuse.x, pMaterial->diffuse.y, pMaterial->diffuse.z, pMaterial->alpha );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT, pMaterial->ambient );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE, pMaterial->diffuse );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, pMaterial->specular );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &pMaterial->shininess );
+    glColor4f( 
+        material.diffuse.x,
+        material.diffuse.y,
+        material.diffuse.z,
+        material.alpha );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT,    material.ambient );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE,    material.diffuse );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR,   material.specular );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &material.shininess );
 }
 
 } // namespace /* anonymous */
 
 
-/////////////////////////////////////////////////////////////////////////
-// MeshOBJ
-/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+// MeshOBJ class
+/////////////////////////////////////////////////////////////////////////////////////////////
 
-//-----------------------------------------------------------------------
-// Name : MeshOBJ()
-// Desc : コンストラクタ
-//-----------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      コンストラクタです.
+//-------------------------------------------------------------------------------------------
 MeshOBJ::MeshOBJ()
-: m_Vertices    ( nullptr )
-, m_Subsets     ( nullptr )
-, m_Materials   ( nullptr )
-, m_Indices     ( nullptr )
-, m_NumVertices ( 0 )
-, m_NumSubsets  ( 0 )
-, m_NumMaterials( 0 )
-, m_NumIndices  ( 0 )
+: m_Vertices    ()
+, m_Subsets     ()
+, m_Materials   ()
+, m_Indices     ()
 , m_Box         ()
 , m_Sphere      ()
 { /* DO_NOTHING */ }
 
-//-----------------------------------------------------------------------
-// Name : ~MeshOBJ()
-// Desc : デストラクタ
-//-----------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------
+//      デストラクタです.
+//-------------------------------------------------------------------------------------------
 MeshOBJ::~MeshOBJ()
 { Release(); }
 
-//-----------------------------------------------------------------------
-// Name : Release()
-// Desc : メモリを破棄
-//-----------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------
+//      メモリを解放します.
+//-------------------------------------------------------------------------------------------
 void MeshOBJ::Release()
 {
-    SAFE_DELETE_ARRAY( m_Vertices );
-    SAFE_DELETE_ARRAY( m_Materials );
-    SAFE_DELETE_ARRAY( m_Subsets );
-    SAFE_DELETE_ARRAY( m_Indices );
-
-    m_NumVertices = 0;
-    m_NumMaterials = 0;
-    m_NumSubsets = 0;
-    m_NumIndices = 0;
+    m_Vertices .clear();
+    m_Subsets  .clear();
+    m_Materials.clear();
+    m_Indices  .clear();
 }
 
-//-----------------------------------------------------------------------
-// Name : LoadOBJFile()
-// Desc : OBJファイルの読み込み
-//-----------------------------------------------------------------------
-bool MeshOBJ::LoadOBJFile(const char *filename)
+//-------------------------------------------------------------------------------------------
+//      OBJファイルから読み込み処理を行います.
+//-------------------------------------------------------------------------------------------
+bool MeshOBJ::LoadOBJFile( const char *filename )
 {
     std::ifstream file;
 
-    char mtlFileName[OBJ_NAME_LENGTH] = {0};
-    char buf[OBJ_BUFFER_LENGTH] = {0};
-    std::vector<Vec3> positions;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> texcoords;
-    std::vector<OBJVERTEX> t_vertices;
-    std::vector<OBJSUBSET> t_subsets;
-    std::vector<unsigned int> t_indices;
-    bool initBox = false;
-    int prevSize = 0;
+    std::string materialFile;
 
-    unsigned long total = 0;
+    const int BUFFER_LENGTH = 2048;
+    char buf[BUFFER_LENGTH] = { 0 };
+    std::vector<Vec3>   positions;
+    std::vector<Vec3>   normals;
+    std::vector<Vec2>   texcoords;
+    bool initBox  = false;
+    int  prevSize = 0;
 
-    OBJMATERIAL material;
-    unsigned int dwFaceIndex = 0;
-    unsigned int dwFaceCount = 0;
-    unsigned int dwCurSubset = 0;
+    unsigned int total     = 0;
+    unsigned int faceIndex = 0;
+    unsigned int faceCount = 0;
+    std::string  curMaterial;
 
     //　ファイルを開く
     file.open( filename, std::ios::in );
@@ -143,8 +135,7 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
 
         //　コメント
         if ( 0 == strcmp( buf, "#" ) )
-        {
-        }
+        { continue; }
 
         //　頂点座標
         else if ( 0 == strcmp( buf, "v" ) )
@@ -184,19 +175,24 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
         //　面
         else if ( 0 == strcmp( buf, "f" ) )
         {
-            unsigned int iPosition, iTexCoord, iNormal;
-            unsigned int p[4] = {-1}, t[4] = {-1}, n[4] = {-1};	
-            OBJVERTEX vertex;
-            dwFaceIndex++;
-            dwFaceCount++;
-            int count = 0;
-            unsigned int index = 0;
+            unsigned int iPosition = 0;
+            unsigned int iTexCoord = 0;
+            unsigned int iNormal   = 0;
+            unsigned int p[4]      = {-1};
+            unsigned int t[4]      = {-1};
+            unsigned int n[4]      = {-1};
+            int          count     = 0;
+            unsigned int index     = 0;
+            Vertex       vertex;
+
+            faceIndex++;
+            faceCount++;
 
             //　三角形・四角形のみ対応
             for ( int iFace = 0; iFace < 4; iFace++ )
             {
-                count++;	//　頂点数を数える
-                ZeroMemory( &vertex, sizeof( OBJVERTEX ) );
+                count++;    //　頂点数を数える
+                memset( &vertex, 0, sizeof( vertex ) );
 
                 file >> iPosition;
                 vertex.position = positions[ iPosition - 1 ];
@@ -228,9 +224,9 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
                 //　カウントが3未満
                 if ( iFace < 3 )
                 {
-                    t_vertices.push_back( vertex );
-                    index = t_vertices.size()-1;
-                    t_indices.push_back( index );
+                    index = m_Vertices.size();
+                    m_Vertices.push_back( vertex );
+                    m_Indices .push_back( index );
                 }
 
                 //　次が改行だったら終了
@@ -245,22 +241,22 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
             if ( count > 3 )
             {
                 //　カウント
-                dwFaceIndex++;
-                dwFaceCount++;
+                faceIndex++;
+                faceCount++;
 
                 //　頂点とインデックスを追加
-                for ( int iFace = 1; iFace < 4; iFace++ )
+                for ( int idx = 1; idx < 4; idx++ )
                 {
-                    int j = (iFace+1)%4;
-                    ZeroMemory( &vertex, sizeof( OBJVERTEX ) );
+                    int j = ( idx + 1 ) % 4;
+                    memset( &vertex, 0, sizeof( vertex ) );
 
                     if ( p[j] != -1 ) vertex.position = positions[ p[j] ];
                     if ( t[j] != -1 ) vertex.texcoord = texcoords[ t[j] ];
-                    if ( n[j] != -1 ) vertex.normal = normals[ n[j] ];
+                    if ( n[j] != -1 ) vertex.normal   = normals  [ n[j] ];
 
-                    t_vertices.push_back( vertex );
-                    index = t_vertices.size() - 1;
-                    t_indices.push_back( index );
+                    index = m_Vertices.size();
+                    m_Vertices.push_back( vertex );
+                    m_Indices .push_back( index );
                 }
 
             }
@@ -269,11 +265,14 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
         //　マテリアルファイル
         else if ( 0 == strcmp( buf, "mtllib" ) )
         {
-            file >> mtlFileName;
+            char fileName[ 256 ];
+            file >> fileName;
+
+            materialFile =  filename;
             //　マテリアルファイルの読み込み
-            if ( mtlFileName[0] )
+            if ( !materialFile.empty() )
             {
-                if ( !LoadMTLFile( mtlFileName ) )
+                if ( !LoadMTLFile( materialFile.c_str() ) )
                 {
                     std::cerr << "Error : マテリアルのロードに失敗\n";
                     return false;
@@ -284,92 +283,78 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
         //　マテリアル
         else if ( 0 == strcmp( buf, "usemtl" ) )
         {
-            char strName[OBJ_NAME_LENGTH] = {0};
-            file >> strName;
-            OBJSUBSET subset;
+            std::string name;
+            file >> name;
+            Subset subset;
             subset.offset = 1;
 
-            for ( unsigned int i = 0; i < m_NumMaterials; i++ )
+            MaterialDictionaryItr itr = m_Materials.find( name );
+            if ( itr != m_Materials.end() )
             {
-                if ( 0 == strcmp( m_Materials[i].name, strName ) )
-                {
-                    dwCurSubset = i;
-                    break;
-                }
+                curMaterial = name;
             }
 
-            subset.materialID = dwCurSubset;
-            subset.offset = dwFaceIndex*3;
-            prevSize = t_subsets.size();
-            t_subsets.push_back( subset );
-            if ( t_subsets.size() > 1 )
+            subset.materialName = curMaterial;
+            subset.offset       = faceIndex * 3;
+            prevSize            = m_Subsets.size();
+            m_Subsets.push_back( subset );
+            if ( m_Subsets.size() > 1 )
             {
-                t_subsets[prevSize-1].count = dwFaceCount*3;
-                dwFaceCount = 0;
+                m_Subsets[ prevSize - 1 ].count = faceCount * 3;
+                faceCount = 0;
             }
         }
 
-        file.ignore( OBJ_BUFFER_LENGTH, '\n' );
+        file.ignore( BUFFER_LENGTH, '\n' );
     }
 
     //　サブセット
-    if ( t_subsets.size() > 0 )
+    if ( m_Subsets.size() > 0 )
     {
-        int maxSize = t_subsets.size();
-        t_subsets[maxSize-1].count = dwFaceCount*3;
+        int maxSize = m_Subsets.size();
+        m_Subsets[maxSize-1].count = faceCount * 3;
     }
 
     //　ファイルを閉じる
     file.close();
 
+    // メモリを解放.
     positions.clear();
-    normals.clear();
+    normals  .clear();
     texcoords.clear();
 
-    //　頂点データをコピー
-    m_NumVertices = t_vertices.size();
-    m_Vertices = new OBJVERTEX[ m_NumVertices ];
-    for ( unsigned int i = 0; i<m_NumVertices; i++ )
-        m_Vertices[i] = t_vertices[i];
+    // 最適化
+    {
+        size_t size = 0;
+        size = m_Vertices.size();
+        m_Vertices.resize( size );
 
-    t_vertices.clear();
+        size = m_Subsets.size();
+        m_Subsets.resize( size );
 
-    //　サブセットデータをコピー
-    m_NumSubsets = t_subsets.size();
-    m_Subsets = new OBJSUBSET[ m_NumSubsets ];
-    for ( unsigned int i =0; i<m_NumSubsets; i++ )
-        m_Subsets[i] = t_subsets[i];
-
-    t_subsets.clear();
-
-    //　インデックスデータをコピー
-    m_NumIndices = t_indices.size();
-    m_Indices = new unsigned int [ m_NumIndices ];
-    for ( unsigned int i = 0; i<m_NumIndices; i++ )
-        m_Indices[i] = t_indices[i];
-
-    t_indices.clear();
+        size = m_Indices.size();
+        m_Indices.resize( size );
+    }
 
     //　バウンディングスフィアの作成
     m_Sphere = BoundingSphere( m_Box );
-
 
     //　正常終了
     return true;
 }
 
-//-----------------------------------------------------------------------
-// Name : LoadMTLFile()
-// Desc : MTLファイルの読み込み
-//-----------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      MTLファイルから読み込み処理を行います.
+//-------------------------------------------------------------------------------------------
 bool MeshOBJ::LoadMTLFile( const char* filename )
 {
-    char buf[OBJ_BUFFER_LENGTH] = {0};
-    int iMtlCount = -1;
+    const int BUFFER_LENGTH = 2048;
+
+    char buf[BUFFER_LENGTH] = { 0 };
+    int  count = -1;
+
     std::ifstream file;
-    std::vector<OBJMATERIAL> t_materials;
-    OBJMATERIAL material;
-    InitMaterial( &material );
+    std::string   name;
 
     //　ファイルを開く
     file.open( filename, std::ios::in );
@@ -377,7 +362,7 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
     //　チェック
     if ( !file.is_open() )
     {
-        std::cerr << "Error : ファイルオープンに失敗しました\n";
+        std::cerr << "Error : File Open Failed\n";
         std::cerr << "File Name : " << filename << std::endl;
         return false;
     }
@@ -389,102 +374,90 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
         if ( !file )
             break;
 
+        if ( 0 == strcmp( buf, "#" ) )
+        { continue; }
         // New Material
-        if ( 0 == strcmp( buf, "newmtl" ) )
+        else if ( 0 == strcmp( buf, "newmtl" ) )
         {
-            iMtlCount++;
-            t_materials.push_back( material );
-            char strName[OBJ_NAME_LENGTH] = {0};
-            file >> strName;
-            strcpy_s( t_materials[iMtlCount].name, strName );
+            count++;
+            Material material;
+            material.id = count;
+            file >> name;
+
+            m_Materials.insert( std::pair<std::string, Material>( name, material ) );
         }
         // Ambient Color
         else if ( 0 == strcmp( buf, "Ka" ) )
         {
             float r, g, b;
             file >> r >> g >> b;
-            t_materials[iMtlCount].ambient = Vec3( r, g, b );
+            m_Materials[ name ].ambient = Vec3( r, g, b );
         }
         // Diffuse Color
         else if ( 0 == strcmp( buf, "Kd" ) )
         {
             float r, g, b;
             file >> r >> g >> b;
-            t_materials[iMtlCount].diffuse = Vec3( r, g, b );
+            m_Materials[ name ].diffuse = Vec3( r, g, b );
         }
         // Specular Color
         else if ( 0 == strcmp( buf, "Ks" ) )
         {
             float r, g, b;
             file >> r >> g >> b;
-            t_materials[iMtlCount].specular = Vec3( r, g, b );
+            m_Materials[ name ].specular = Vec3( r, g, b );
         }
         // Alpha
-        else if ( 0 == strcmp( buf, "d" ) ||
-            0 == strcmp( buf, "Tr" ) )
+        else if ( ( 0 == strcmp( buf, "d" )  )
+               || ( 0 == strcmp( buf, "Tr" ) ) )
         {
-            file >> t_materials[iMtlCount].alpha;
+            file >> m_Materials[ name ].alpha;
         }
         // Shininess
         else if ( 0 == strcmp( buf, "Ns" ) )
         {
-            file >> t_materials[iMtlCount].shininess;
+            file >> m_Materials[ name ].shininess;
         }
         // Ambient Map
         else if ( 0 == strcmp( buf, "map_Ka" ) )
         {
-            char mapKaName[OBJ_NAME_LENGTH];
-            file >> mapKaName;
-            strcpy_s( t_materials[iMtlCount].ambientMapName, mapKaName );
+            file >> m_Materials[ name ].ambientMap;
         }
         // Diffuse Map
         else if ( 0 == strcmp( buf, "map_Kd" ) )
         {
-            char mapKdName[OBJ_NAME_LENGTH];
-            file >> mapKdName;
-            strcpy_s( t_materials[iMtlCount].diffuseMapName, mapKdName );
+            file >> m_Materials[ name ].diffuseMap;
         }
         // Specular Map
         else if ( 0 == strcmp( buf, "map_Ks" ) )
         {
-            char mapKsName[OBJ_NAME_LENGTH];
-            file >> mapKsName;
-            strcpy_s( t_materials[iMtlCount].specularMapName, mapKsName );
+            file >> m_Materials[ name ].specularMap;
         }
         // Bump Map
         else if ( 0 == strcmp( buf, "map_Bump" ) )
         {
-            char mapBumpName[OBJ_NAME_LENGTH];
-            file >> mapBumpName;
-            strcpy_s( t_materials[iMtlCount].bumpMapName, mapBumpName );
+            file >> m_Materials[ name ].bumpMap;
         }
 
-        file.ignore( OBJ_BUFFER_LENGTH, '\n' );
+        file.ignore( BUFFER_LENGTH, '\n' );
     }
 
     //　ファイルを閉じる
     file.close();
 
-    //　マテリアルデータをコピー
-    m_NumMaterials = t_materials.size();
-    m_Materials = new OBJMATERIAL[ m_NumMaterials ];
-    for ( unsigned int i = 0; i<m_NumMaterials; i++ )
-        m_Materials[i] = t_materials[i];
-
     //　正常終了
     return true;
 }
 
-//-----------------------------------------------------------------------
-// Name : LoadFile()
-// Desc : メッシュファイルの読み込み
-//-----------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      ファイルから読み込み処理を行います.
+//-------------------------------------------------------------------------------------------
 bool MeshOBJ::LoadFromFile( const char* filename )
 {
     //　OBJ, MTLファイルを読み込み
     if ( !LoadOBJFile( filename ) )
     {
-        std::cerr << "Error : メッシュファイルの読み込みに失敗しました\n";
+        std::cerr << "Error : Load File Failed.\n";
         return false;
     }
 
@@ -493,121 +466,81 @@ bool MeshOBJ::LoadFromFile( const char* filename )
 }
 
 
-//-----------------------------------------------------------------------
-// Name : Draw()
-// Desc : 描画処理
-//-----------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      描画処理を行います.
+//-------------------------------------------------------------------------------------------
 void MeshOBJ::Draw()
 {
-    for ( unsigned int i = 0; i<m_NumSubsets; i++ )
+    for ( size_t i = 0; i<m_Subsets.size(); i++ )
     {
         //　マテリアル
-        OBJMATERIAL* pMat = &m_Materials[m_Subsets[i].materialID];
-        SetMaterial( pMat );	
+        Material& material = m_Materials[m_Subsets[i].materialName];
+        SetMaterial( material );
 
         //　三角形描画
-        glInterleavedArrays( GL_T2F_N3F_V3F, 0, m_Vertices );
+        glInterleavedArrays( GL_T2F_N3F_V3F, 0, &m_Vertices[0] );
         glDrawElements( GL_TRIANGLES, m_Subsets[i].count, GL_UNSIGNED_INT, &m_Indices[m_Subsets[i].offset] );
     }
 }
 
-
-//------------------------------------------------------------------------
-// Name : GetNumVertices()
-// Desc : 頂点数を取得
-//------------------------------------------------------------------------
-unsigned int MeshOBJ::GetNumVertices()
-{ return m_NumVertices; }
-
-//-----------------------------------------------------------------------
-// Name : GetNumSubsets()
-// Desc : サブセット数を取得
-//-----------------------------------------------------------------------
-unsigned int MeshOBJ::GetNumSubsets()
-{ return m_NumSubsets; }
-
-//-----------------------------------------------------------------------
-// Name : GetNumMaterials()
-// Desc : マテリアル数を取得
-//-----------------------------------------------------------------------
-unsigned int MeshOBJ::GetNumMaterials()
-{ return m_NumMaterials; }
-
-//-----------------------------------------------------------------------
-// Name : GetNumIndices()
-// Desc : インデックス数を取得
-//-----------------------------------------------------------------------
-unsigned int MeshOBJ::GetNumIndices()
-{ return m_NumIndices; }
-
-//-----------------------------------------------------------------------
-// Name : GetIndexData()
-// Desc : 指定されたインデックスデータを取得
-//-----------------------------------------------------------------------
-unsigned int MeshOBJ::GetIndexData( unsigned int index )
-{ return m_Indices[index]; }
-
-//-----------------------------------------------------------------------
-// Name : GetVertex()
-// Desc : 指定された頂点データを取得
-//-----------------------------------------------------------------------
-OBJVERTEX MeshOBJ::GetVertex( unsigned int index )
-{ return m_Vertices[index]; }
-
-//-----------------------------------------------------------------------
-// Name : GetSubsets()
-// Desc : 指定されたサブセットデータを取得
-//-----------------------------------------------------------------------
-OBJSUBSET MeshOBJ::GetSubset( unsigned int index )
-{ return m_Subsets[index]; }
-
-//-----------------------------------------------------------------------
-// Name : GetMaterial()
-// Desc : 指定されたマテリアルデータを取得
-//-----------------------------------------------------------------------
-OBJMATERIAL MeshOBJ::GetMaterial( unsigned int index )
-{ return m_Materials[index]; }
-
-//-----------------------------------------------------------------------
-// Name : GetVertices()
-// Desc : 頂点データを取得
-//-----------------------------------------------------------------------
-OBJVERTEX* MeshOBJ::GetVertices()
+//-------------------------------------------------------------------------------------------
+//      頂点バッファを取得します.
+//-------------------------------------------------------------------------------------------
+MeshOBJ::VertexList& MeshOBJ::GetVertices()
 { return m_Vertices; }
 
-//-----------------------------------------------------------------------
-// Name : GetSubsets()
-// Desc : サブセットデータを取得
-//-----------------------------------------------------------------------
-OBJSUBSET* MeshOBJ::GetSubsets()
+//-------------------------------------------------------------------------------------------
+//      サブセットを取得します.
+//-------------------------------------------------------------------------------------------
+MeshOBJ::SubsetList& MeshOBJ::GetSubsets()
 { return m_Subsets; }
 
-//-----------------------------------------------------------------------
-// Name : GetMaterails()
-// Desc : マテリアルデータを取得
-//-----------------------------------------------------------------------
-OBJMATERIAL* MeshOBJ::GetMaterials()
+//-------------------------------------------------------------------------------------------
+//      マテリアルを取得します.
+//-------------------------------------------------------------------------------------------
+MeshOBJ::MaterialDictionary& MeshOBJ::GetMaterials()
 { return m_Materials; }
 
-//-----------------------------------------------------------------------
-// Name : GetIndices()
-// Desc : インデックスデータを取得
-//-----------------------------------------------------------------------
-unsigned int* MeshOBJ::GetIndices()
+//-------------------------------------------------------------------------------------------
+//      頂点インデックスを取得します.
+//-------------------------------------------------------------------------------------------
+MeshOBJ::IndexList& MeshOBJ::GetIndices()
 { return m_Indices; }
 
-//-----------------------------------------------------------------------
-// Name : GetBox()
-// Desc : バウンディングボックスを取得
-//-----------------------------------------------------------------------
-BoundingBox MeshOBJ::GetBox()
+//-------------------------------------------------------------------------------------------
+//      頂点バッファを取得します.
+//-------------------------------------------------------------------------------------------
+const MeshOBJ::VertexList& MeshOBJ::GetVertices() const
+{ return m_Vertices; }
+
+//-------------------------------------------------------------------------------------------
+//      サブセットを取得します.
+//-------------------------------------------------------------------------------------------
+const MeshOBJ::SubsetList& MeshOBJ::GetSubsets() const
+{ return m_Subsets; }
+
+//-------------------------------------------------------------------------------------------
+//      マテリアルを取得します.
+//-------------------------------------------------------------------------------------------
+const MeshOBJ::MaterialDictionary& MeshOBJ::GetMaterials() const
+{ return m_Materials; }
+
+//-------------------------------------------------------------------------------------------
+//      頂点インデックスを取得します.
+//-------------------------------------------------------------------------------------------
+const MeshOBJ::IndexList& MeshOBJ::GetIndices() const
+{ return m_Indices; }
+
+//-------------------------------------------------------------------------------------------
+//      バウンディングボックスを取得します.
+//-------------------------------------------------------------------------------------------
+BoundingBox MeshOBJ::GetBox() const
 { return m_Box; }
 
-//-----------------------------------------------------------------------
-// Name : GetSphere()
-// Desc : バウンディングスフィアを取得
-//-----------------------------------------------------------------------
-BoundingSphere MeshOBJ::GetSphere()
+//-------------------------------------------------------------------------------------------
+//      バウンディングスフィアを取得します.
+//-------------------------------------------------------------------------------------------
+BoundingSphere MeshOBJ::GetSphere() const
 { return m_Sphere; }
 
 

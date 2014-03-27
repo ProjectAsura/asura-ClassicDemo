@@ -11,59 +11,65 @@
 // Includes
 //-------------------------------------------------------------------------------------------
 #include <TinyMath.h>
-
-
-//-------------------------------------------------------------------------------------------
-// Constant Values
-//-------------------------------------------------------------------------------------------
-static const unsigned int OBJ_BUFFER_LENGTH = 1024;
-static const unsigned int OBJ_NAME_LENGTH   = 256;
+#include <vector>
+#include <map>
+#include <string>
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// OBJVERTEX
+// Vertex structure
 /////////////////////////////////////////////////////////////////////////////////////////////
-struct OBJVERTEX
+struct Vertex
 {
     Vec3 position;
     Vec3 normal;
     Vec2 texcoord;
 
-    OBJVERTEX()
+    Vertex()
     { /* DO_NOTHING */ }
 };
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////
-// OBJSUBSET
+// Subset structure
 /////////////////////////////////////////////////////////////////////////////////////////////
-struct OBJSUBSET
+struct Subset
 {
-    unsigned int materialID;
+    std::string  materialName;
     unsigned int offset;
     unsigned int count;
 
-    OBJSUBSET()
+    Subset()
     { /* DO_NOTHING */ }
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// OBJMATERIAL
-/////////////////////////////////////////////////////////////////////////////////////////////
-struct OBJMATERIAL
-{
-    char    name[OBJ_NAME_LENGTH];
-    Vec3    ambient;
-    Vec3    diffuse;
-    Vec3    specular;
-    float   shininess;
-    float   alpha;
-    char    ambientMapName [OBJ_NAME_LENGTH];
-    char    diffuseMapName [OBJ_NAME_LENGTH];
-    char    specularMapName[OBJ_NAME_LENGTH];
-    char    bumpMapName    [OBJ_NAME_LENGTH];
 
-    OBJMATERIAL()
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Material structure
+/////////////////////////////////////////////////////////////////////////////////////////////
+struct Material
+{
+    int         id;
+    Vec3        ambient;
+    Vec3        diffuse;
+    Vec3        specular;
+    float       shininess;
+    float       alpha;
+    std::string ambientMap;
+    std::string diffuseMap;
+    std::string specularMap;
+    std::string bumpMap;
+
+    Material()
     { /* DO_NOTHING */ }
+
+    ~Material()
+    {
+        ambientMap .clear();
+        diffuseMap .clear();
+        specularMap.clear();
+        bumpMap    .clear();
+    }
 };
 
 
@@ -78,50 +84,78 @@ class MeshOBJ
     /* NOTHING */
 
 public:
+    //=======================================================================================
+    // type definitions
+    //=======================================================================================
+    typedef std::vector<Vertex>                 VertexList;
+    typedef std::vector<Subset>                 SubsetList;
+    typedef std::map<std::string, Material>     MaterialDictionary;
+    typedef std::vector<unsigned int>           IndexList;
+    typedef VertexList::iterator                VertexListItr;
+    typedef VertexList::const_iterator          VertexListCItr;
+    typedef SubsetList::iterator                SubsetListItr;
+    typedef SubsetList::const_iterator          SubsetListCItr;
+    typedef MaterialDictionary::iterator        MaterialDictionaryItr;
+    typedef MaterialDictionary::const_iterator  MaterialDictionaryCItr;
+    typedef IndexList::iterator                 IndexListItr;
+    typedef IndexList::const_iterator           IndexListCItr;
+
+    //=======================================================================================
+    // public variables.
+    //=======================================================================================
+    /* NOTHING */
+
+    //=======================================================================================
+    // public methods.
+    //=======================================================================================
     MeshOBJ();
+    MeshOBJ( const MeshOBJ& value );
     virtual ~MeshOBJ();
 
     bool LoadFromFile( const char* filename );
     void Release     ();
     void Draw        ();
 
-    unsigned int        GetNumVertices  ();
-    unsigned int        GetNumSubsets   ();
-    unsigned int        GetNumMaterials ();
-    unsigned int        GetNumIndices   ();
-    unsigned int        GetIndexData    ( unsigned int index );
-    OBJVERTEX           GetVertex       ( unsigned int index );
-    OBJSUBSET           GetSubset       ( unsigned int index );
-    OBJMATERIAL         GetMaterial     ( unsigned int index );
-    OBJVERTEX*          GetVertices     ();
-    OBJSUBSET*          GetSubsets      ();
-    OBJMATERIAL*        GetMaterials    ();
-    unsigned int*       GetIndices      ();
-    BoundingBox         GetBox          ();
-    BoundingSphere      GetSphere       ();
+    VertexList&                 GetVertices    ();
+    SubsetList&                 GetSubsets     ();
+    MaterialDictionary&         GetMaterials   ();
+    IndexList&                  GetIndices     ();
+    const VertexList&           GetVertices    () const;
+    const SubsetList&           GetSubsets     () const;
+    const MaterialDictionary&   GetMaterials   () const;
+    const IndexList&            GetIndices     () const;
+    BoundingBox                 GetBox         () const;
+    BoundingSphere              GetSphere      () const;
+
+    MeshOBJ& operator = ( const MeshOBJ& value );
 
 protected:
-    OBJVERTEX*          m_Vertices;
-    OBJSUBSET*          m_Subsets;
-    OBJMATERIAL*        m_Materials;
-    unsigned int*       m_Indices;
-    unsigned int        m_NumVertices;
-    unsigned int        m_NumSubsets;
-    unsigned int        m_NumMaterials;
-    unsigned int        m_NumIndices;
+    //======================================================================================
+    // protected variables.
+    //======================================================================================
+    VertexList          m_Vertices;
+    SubsetList          m_Subsets;
+    MaterialDictionary  m_Materials;
+    IndexList           m_Indices;
     BoundingBox         m_Box;
     BoundingSphere      m_Sphere;
 
+    //======================================================================================
+    // protected methods.
+    //======================================================================================
     bool LoadMTLFile( const char* filename );
     bool LoadOBJFile( const char* filename );
 
 private:
+    //======================================================================================
+    // private variables.
+    //======================================================================================
+    /* NOTHING */
 
-
-    MeshOBJ         ( const MeshOBJ& value );
-    void operator = ( const MeshOBJ& value );
-
-
+    //======================================================================================
+    // private methods.
+    //======================================================================================
+    /* NOTHING */
 };
 
 #endif//__MESH_OBJ_H__

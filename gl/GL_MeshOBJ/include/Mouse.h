@@ -1,88 +1,111 @@
-/***************************************************************************
-		Mouse.h
+//-------------------------------------------------------------------------------------------
+// File : Mouse.h
+// Desc : Mouse Module.
+// Copyright(c) Project Asura. All right reserved.
+//-------------------------------------------------------------------------------------------
 
-		Mouse Function Library
+#ifndef _MOUSE_H_
+#define _MOUSE_H_
 
-		Version : 1.0
-		Date : Nov. 02, 2007
-		Author : Pocol
-****************************************************************************/
-
-#ifndef _MOUSE_H_INCLUDED_
-#define _MOUSE_H_INCLUDED_
-
-//
-//　include
-//
-#include <iostream>
-using namespace std;
+//-------------------------------------------------------------------------------------------
+// Includes
+//-------------------------------------------------------------------------------------------
+#include <TinyMath.h>
 
 
-//
-//　global
-//
-const double PI = 3.14159265358979323846264338327;
-template<class T> static inline T RadToDeg(T rad) { return ( (rad)*(180.0/PI) ); }
-template<class T> static inline T DegToRad(T deg) { return ( (deg)*(PI/180.0) ); }
-typedef enum MState	{ Push, Release, None };
+/////////////////////////////////////////////////////////////////////////////////////////////
+// MouseState enum
+/////////////////////////////////////////////////////////////////////////////////////////////
+typedef enum MouseState
+{ 
+    Push,
+    Release,
+    None
+};
 
-//////////////////////////////////////////////////////////////////////////
-//　　MPosition class
-//////////////////////////////////////////////////////////////////////////
-class MPosition
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Cursor class
+/////////////////////////////////////////////////////////////////////////////////////////////
+struct Cursor
 {
-public:
-	double x;
-	double y;
+    float x;
+    float y;
 
-	MPosition(double nx=0.0, double ny=0.0) { x=nx; y=ny; }
-	~MPosition() {}
-	void Reset() { x = 0.0, y=0.0; }
-	void ConsoleOut() { cout << "(x, y) = (" << x << ", " << y << ")\n"; } 
+    Cursor()
+    : x( 0.0f )
+    , y( 0.0f )
+    { /* DO_NOTHING */ }
+
+    Cursor( float nx, float ny ) 
+    : x( nx )
+    , y( ny )
+    { /* DO_NOTHING */ }
+
+    ~Cursor()
+    { /* DO_NOTHING */ }
+
+    void Reset()
+    {
+        x = 0.0f;
+        y = 0.0f;
+    }
 };
 
 
-//////////////////////////////////////////////////////////////////////////
-//　　MouseButton class
-//////////////////////////////////////////////////////////////////////////
-class MouseButton
+/////////////////////////////////////////////////////////////////////////////////////////////
+//  MouseButton struct
+/////////////////////////////////////////////////////////////////////////////////////////////
+struct MouseButton
 {
-public:
-	MPosition before;
-	MPosition current;
-	MPosition after;
-	MState state;
+    Cursor      before;
+    Cursor      current;
+    Cursor      after;
+    MouseState  state;
 
-	MouseButton();
-	~MouseButton();
-	void Reset();
-	void ConsoleOut();
+    MouseButton()
+    : before    ()
+    , current   ()
+    , after     ()
+    , state     ( None )
+    { /* DO_NOTHING */ }
+
+    ~MouseButton()
+    { /* DO_NOTHING */ }
+
+    void Reset()
+    {
+        before .Reset();
+        current.Reset();
+        after  .Reset();
+        state = None;
+    }
 };
 
-//////////////////////////////////////////////////////////////////////////
-//　　ViewCamara class
-//////////////////////////////////////////////////////////////////////////
-class ViewCamera
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Camara class
+/////////////////////////////////////////////////////////////////////////////////////////////
+class Camera
 {
 public:
-	MouseButton right;
-	MouseButton left;
-	MouseButton middle;
+    Camera(float distance=5.0);
+    ~Camera();
+    void Reset();
+    void MouseInput(int button, int state, int x, int y);
+    void MouseMotion(int x, int y);
+    void Set();
+    void DrawGizmo(int w, int h);
 
-	double distance;
-	double angle[3];
-	double position[3];
-	double target[3];
-	double upvector[3];
-	double translate[3];
+private:
+    MouseButton m_Right;
+    MouseButton m_Left;
+    MouseButton m_Middle;
 
-	ViewCamera(double dist=5.0);
-	~ViewCamera();
-	void Reset();
-	void MouseInput(int button, int state, int x, int y);
-	void MouseMotion(int x, int y);
-	void Set();
-	void RenderSubAxis(int w, int h);
+    float m_Distance;
+    Vec2  m_Angle;
+    Vec3  m_Position;
+    Vec3  m_Target;
+    Vec3  m_Upward;
+    Vec3  m_Move;
 };
 
 
