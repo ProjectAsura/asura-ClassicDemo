@@ -9,7 +9,7 @@
 //-------------------------------------------------------------------------------------------
 #include <iostream>
 #include <GL/glut.h>
-#include <OBJLoader.h>
+#include <MeshOBJ.h>
 #include <Mouse.h>
 
 
@@ -103,7 +103,7 @@ bool OnInit()
 
     SetLighting();
 
-    if ( !g_Mesh.LoadFile( "../res/test2.obj" ) )
+    if ( !g_Mesh.LoadFromFile( "../res/test2.obj" ) )
     { return false; }
 
     return true;

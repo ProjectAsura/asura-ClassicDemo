@@ -194,7 +194,9 @@ void Camera::Reset()
 void Camera::Update()
 {
     float dist = m_Distance;
-    dist += ( m_Right.current.y / 30.0f );
+    dist += ( m_Right.current.y * 0.5f );
+    if ( dist < FLT_EPSILON )
+    { dist = FLT_EPSILON; }
 
     float sinH = sinf( m_Angle.x );
     float cosH = cosf( m_Angle.x );
