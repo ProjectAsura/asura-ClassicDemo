@@ -205,19 +205,24 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
         //　面
         else if ( 0 == strcmp( buf, "f" ) )
         {
-            unsigned int iPosition, iTexCoord, iNormal;
-            unsigned int p[4] = {-1}, t[4] = {-1}, n[4] = {-1};	
+            unsigned int iPosition;
+            unsigned int iTexCoord;
+            unsigned int iNormal;
+            unsigned int p[4] = {-1};
+            unsigned int t[4] = {-1};
+            unsigned int n[4] = {-1};
             Vertex vertex;
-            dwFaceIndex++;
-            dwFaceCount++;
             int count = 0;
             unsigned int index = 0;
+
+            dwFaceIndex++;
+            dwFaceCount++;
 
             //　三角形・四角形のみ対応
             for ( int iFace = 0; iFace < 4; iFace++ )
             {
                 count++;	//　頂点数を数える
-                ZeroMemory( &vertex, sizeof( Vertex ) );
+                memset( &vertex, 0, sizeof( Vertex ) );
 
                 file >> iPosition;
                 vertex.position = positions[ iPosition - 1 ];
@@ -298,6 +303,13 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
                 if ( !LoadMTLFile( ( m_DirectoryPath + materialFile ).c_str() ) )
                 {
                     cerr << "Error : マテリアルのロードに失敗\n";
+
+                    positions .clear();
+                    normals   .clear();
+                    texcoords .clear();
+                    t_vertices.clear();
+                    t_indices .clear();
+                    t_subsets .clear();
                     return false;
                 }
             }
@@ -346,38 +358,64 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
 
     //　メモリ破棄
     positions.clear();
-    normals.clear();
+    normals  .clear();
     texcoords.clear();
 
     //　頂点データをコピー
-    m_NumVertices = t_vertices.size();
-    m_Vertices = new Vertex[ m_NumVertices ];
-    for ( unsigned int i = 0; i<m_NumVertices; i++ )
-        m_Vertices[i] = t_vertices[i];
+    {
+        m_NumVertices = t_vertices.size();
+        m_Vertices = new(std::nothrow) Vertex[ m_NumVertices ];
+        if ( m_Vertices == nullptr )
+        {
+            t_vertices.clear();
+            t_indices .clear();
+            t_subsets .clear();
 
-    t_vertices.clear();
+            return false;
+        }
+
+        for ( unsigned int i = 0; i<m_NumVertices; i++ )
+        { m_Vertices[i] = t_vertices[i]; }
+
+        t_vertices.clear();
+    }
 
     //　サブセットデータをコピー
-    m_NumSubsets = t_subsets.size();
-    m_Subsets = new Subset[ m_NumSubsets ];
-    for ( unsigned int i =0; i<m_NumSubsets; i++ )
-        m_Subsets[i] = t_subsets[i];
+    {
+        m_NumSubsets = t_subsets.size();
+        m_Subsets = new(std::nothrow) Subset[ m_NumSubsets ];
+        if ( m_Subsets == nullptr )
+        {
+            t_indices .clear();
+            t_subsets .clear();
 
-    t_subsets.clear();
+            return false;
+        }
 
+        for ( unsigned int i =0; i<m_NumSubsets; i++ )
+        { m_Subsets[i] = t_subsets[i]; }
+
+        t_subsets.clear();
+    }
 
     //　インデックスデータをコピー
-    m_NumIndices = t_indices.size();
-    m_Indices = new unsigned int [ m_NumIndices ];
-    for ( unsigned int i = 0; i<m_NumIndices; i++ )
-        m_Indices[i] = t_indices[i];
+    {
+        m_NumIndices = t_indices.size();
+        m_Indices = new(std::nothrow) unsigned int [ m_NumIndices ];
+        if ( m_Indices == nullptr )
+        {
+            t_indices.clear();
+            return false;
 
-    t_indices.clear();
+        }
+        for ( unsigned int i = 0; i<m_NumIndices; i++ )
+        { m_Indices[i] = t_indices[i]; }
 
+        t_indices.clear();
+    }
 
     //　バウンディングスフィアの作成
     m_Sphere = BoundingSphere( m_Box );
-
 
     //　正常終了
     return true;
@@ -390,7 +428,7 @@ bool MeshOBJ::LoadOBJFile(const char *filename)
 bool MeshOBJ::LoadMTLFile( const char* filename )
 {
     char buf[OBJ_BUFFER_LENGTH] = {0};
-    int iMtlCount = -1;
+    int count = -1;
     ifstream file;
     vector<Material> t_materials;
     Material material;
@@ -417,71 +455,71 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
         // New Material
         if ( 0 == strcmp( buf, "newmtl" ) )
         {
-            iMtlCount++;
+            count++;
             t_materials.push_back( material );
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].name, name.c_str() );
+            strcpy_s( t_materials[count].name, name.c_str() );
         }
         // Ambient Color
         else if ( 0 == strcmp( buf, "Ka" ) )
         {
             float r, g, b;
             file >> r >> g >> b;
-            t_materials[iMtlCount].ambient = Vec3( r, g, b );
+            t_materials[count].ambient = Vec3( r, g, b );
         }
         // Diffuse Color
         else if ( 0 == strcmp( buf, "Kd" ) )
         {
             float r, g, b;
             file >> r >> g >> b;
-            t_materials[iMtlCount].diffuse = Vec3( r, g, b );
+            t_materials[count].diffuse = Vec3( r, g, b );
         }
         // Specular Color
         else if ( 0 == strcmp( buf, "Ks" ) )
         {
             float r, g, b;
             file >> r >> g >> b;
-            t_materials[iMtlCount].specular = Vec3( r, g, b );
+            t_materials[count].specular = Vec3( r, g, b );
         }
         // Alpha
         else if ( 0 == strcmp( buf, "d" ) ||
             0 == strcmp( buf, "Tr" ) )
         {
-            file >> t_materials[iMtlCount].alpha;
+            file >> t_materials[count].alpha;
         }
         // Shininess
         else if ( 0 == strcmp( buf, "Ns" ) )
         {
-            file >> t_materials[iMtlCount].shininess;
+            file >> t_materials[count].shininess;
         }
         // Ambient Map
         else if ( 0 == strcmp( buf, "map_Ka" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].ambientMapName, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[count].ambientMapName, ( m_DirectoryPath + name ).c_str() );
         }
         // Diffuse Map
         else if ( 0 == strcmp( buf, "map_Kd" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].diffuseMapName, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[count].diffuseMapName, ( m_DirectoryPath + name ).c_str() );
         }
         // Specular Map
         else if ( 0 == strcmp( buf, "map_Ks" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].specularMapName, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[count].specularMapName, ( m_DirectoryPath + name ).c_str() );
         }
         // Bump Map
         else if ( 0 == strcmp( buf, "map_Bump" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].bumpMapName, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[count].bumpMapName, ( m_DirectoryPath + name ).c_str() );
         }
 
         file.ignore( OBJ_BUFFER_LENGTH, '\n' );
@@ -500,7 +538,7 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
     }
 
     for ( unsigned int i = 0; i<m_NumMaterials; i++ )
-        m_Materials[i] = t_materials[i];
+    { m_Materials[i] = t_materials[i]; }
 
     t_materials.clear();
 
