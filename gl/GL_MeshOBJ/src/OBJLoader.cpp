@@ -1,36 +1,38 @@
-//-------------------------------------------------------------------------------------------
-// File : MeshOBJ.cpp
-// Desc : Wavefront Object File Module.
-// Copyright(c) Project Asura. All right reserved.
-//-------------------------------------------------------------------------------------------
+#pragma region File Description
+//-----------------------------------------------------------------------
+// File : OBJLoader.cpp
+// Desc : Alias Wavefront OBJ File Loader
+// Date : Mar. 04, 2009
+// Version : 2.1
+// Author : Pocol
+// Memo : 4角形対応済み。5角形以上はサポートしない。
+//-----------------------------------------------------------------------
+#pragma endregion 
 
-//-------------------------------------------------------------------------------------------
+//
 // Includes
-//-------------------------------------------------------------------------------------------
-#include <MeshOBJ.h>
-#include <cstring>
+//
+#include "OBJLoader.h"
+#include <string>
 #include <GL/glut.h>
-#include <cmath>
-#include <vector>
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <vector>
 
 
-//-------------------------------------------------------------------------------------------
-// Macros
-//-------------------------------------------------------------------------------------------
+// SAFE_DELETE_ARRAY
 #ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY( x ) { if ( x ) { delete[] (x); (x) = nullptr; } }
-#endif//SAFE_DELETE_ARRAY
+#define SAFE_DELETE_ARRAY(x) { if (x) { delete [] (x); (x) = NULL; } }
+#endif
 
+using namespace std;
 
 namespace /* anonymous */ {
 
-static const unsigned int OBJ_BUFFER_LENGTH = 2048;
-
-//-------------------------------------------------------------------------------------------
-//      マテリアルの初期化を行います.
-//-------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------
+// Name : InitMaterial()
+// Desc : マテリアルの初期化
+//-----------------------------------------------------------------------
 void InitMaterial( Material* pMaterial )
 {
     memset( pMaterial, 0, sizeof( Material ) );
@@ -41,55 +43,59 @@ void InitMaterial( Material* pMaterial )
     pMaterial->alpha     = 1.0f;
 }
 
-//-------------------------------------------------------------------------------------------
-//      マテリアルを設定します.
-//-------------------------------------------------------------------------------------------
-void SetMaterial( Material* material )
+//-----------------------------------------------------------------------
+// Name : SetMaterial()
+// Desc : マテリアルを設定する
+//-----------------------------------------------------------------------
+void SetMaterial( Material* pMaterial )
 {
-    if ( material == nullptr )
-    { return; }
-
-    glColor4f( 
-        material->diffuse.x,
-        material->diffuse.y,
-        material->diffuse.z,
-        material->alpha );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT,    material->ambient );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE,    material->diffuse );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR,   material->specular );
-    glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &material->shininess );
+    glColor4f(
+        pMaterial->diffuse.x,
+        pMaterial->diffuse.y, 
+        pMaterial->diffuse.z,
+        pMaterial->alpha );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT,    pMaterial->ambient );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE,    pMaterial->diffuse );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR,   pMaterial->specular );
+    glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &pMaterial->shininess );
 }
 
-} // namespace /* anonymous */
+} // namespace /* anoymous */
 
+/////////////////////////////////////////////////////////////////////////
+// MeshOBJ
+/////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// MeshOBJ class
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-//-------------------------------------------------------------------------------------------
-//      コンストラクタです.
-//-------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// Name : MeshOBJ()
+// Desc : コンストラクタ
+//-----------------------------------------------------------------------
 MeshOBJ::MeshOBJ()
-    : m_Vertices    ()
-    , m_Subsets     ()
-    , m_Materials   ()
-    , m_Indices     ()
-    , m_Box         ()
-    , m_Sphere      ()
-{ /* DO_NOTHING */ }
+{
+    m_NumVertices = 0;
+    m_NumMaterials = 0;
+    m_NumSubsets = 0;
+    m_NumIndices = 0;
 
+    m_Vertices = 0;
+    m_Materials = 0;
+    m_Subsets = 0;
+    m_Indices = 0;
+}
 
-//-------------------------------------------------------------------------------------------
-//      デストラクタです.
-//-------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// Name : ~MeshOBJ()
+// Desc : デストラクタ
+//-----------------------------------------------------------------------
 MeshOBJ::~MeshOBJ()
-{ Release(); }
+{
+    Release();
+};
 
-
-//-------------------------------------------------------------------------------------------
-//      メモリを解放します.
-//-------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// Name : Release()
+// Desc : メモリを破棄
+//-----------------------------------------------------------------------
 void MeshOBJ::Release()
 {
     SAFE_DELETE_ARRAY( m_Vertices );
@@ -103,20 +109,21 @@ void MeshOBJ::Release()
     m_NumIndices   = 0;
 }
 
-//-------------------------------------------------------------------------------------------
-//      OBJファイルから読み込み処理を行います.
-//-------------------------------------------------------------------------------------------
-bool MeshOBJ::LoadOBJFile( const char *filename )
+//-----------------------------------------------------------------------
+// Name : LoadOBJFile()
+// Desc : OBJファイルの読み込み
+//-----------------------------------------------------------------------
+bool MeshOBJ::LoadOBJFile(const char *filename)
 {
-    std::ifstream file;
+    ifstream file;
 
     char buf[OBJ_BUFFER_LENGTH] = {0};
-    std::vector<Vec3> positions;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> texcoords;
-    std::vector<Vertex> t_vertices;
-    std::vector<Subset> t_subsets;
-    std::vector<unsigned int> t_indices;
+    vector<Vec3> positions;
+    vector<Vec3> normals;
+    vector<Vec2> texcoords;
+    vector<Vertex> t_vertices;
+    vector<Subset> t_subsets;
+    vector<unsigned int> t_indices;
     bool initBox = false;
     int prevSize = 0;
 
@@ -139,13 +146,13 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
     }
 
     //　ファイルを開く
-    file.open( filename, std::ios::in );
+    file.open( filename, ios::in );
 
     //　チェック
     if ( !file.is_open() )
     {
-        std::cerr << "Error : ファイルオープンに失敗\n";
-        std::cerr << "File Name : " << filename << std::endl;
+        cerr << "Error : ファイルオープンに失敗\n";
+        cerr << "File Name : " << filename << endl;
         return false;
     }
 
@@ -290,7 +297,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
             {
                 if ( !LoadMTLFile( ( m_DirectoryPath + materialFile ).c_str() ) )
                 {
-                    std::cerr << "Error : マテリアルのロードに失敗\n";
+                    cerr << "Error : マテリアルのロードに失敗\n";
                     return false;
                 }
             }
@@ -302,7 +309,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
             std::string name;
             file >> name;
             Subset subset;
-            subset.count = 1;
+            subset.faceCount = 1;
 
             for ( unsigned int i = 0; i < m_NumMaterials; i++ )
             {
@@ -313,13 +320,13 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
                 }
             }
 
-            subset.materialID = dwCurSubset;
-            subset.offset = dwFaceIndex*3;
+            subset.materialIndex = dwCurSubset;
+            subset.faceStart = dwFaceIndex*3;
             prevSize = t_subsets.size();
             t_subsets.push_back( subset );
             if ( t_subsets.size() > 1 )
             {
-                t_subsets[prevSize-1].count = dwFaceCount*3;
+                t_subsets[prevSize-1].faceCount = dwFaceCount*3;
                 dwFaceCount = 0;
             }
         }
@@ -331,7 +338,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
     if ( t_subsets.size() > 0 )
     {
         int maxSize = t_subsets.size();
-        t_subsets[maxSize-1].count = dwFaceCount*3;
+        t_subsets[maxSize-1].faceCount = dwFaceCount*3;
     }
 
     //　ファイルを閉じる
@@ -367,33 +374,36 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
 
     t_indices.clear();
 
+
     //　バウンディングスフィアの作成
     m_Sphere = BoundingSphere( m_Box );
+
 
     //　正常終了
     return true;
 }
 
-//-------------------------------------------------------------------------------------------
-//      MTLファイルから読み込み処理を行います.
-//-------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// Name : LoadMTLFile()
+// Desc : MTLファイルの読み込み
+//-----------------------------------------------------------------------
 bool MeshOBJ::LoadMTLFile( const char* filename )
 {
     char buf[OBJ_BUFFER_LENGTH] = {0};
     int iMtlCount = -1;
-    std::ifstream file;
-    std::vector<Material> t_materials;
+    ifstream file;
+    vector<Material> t_materials;
     Material material;
     InitMaterial( &material );
 
     //　ファイルを開く
-    file.open( filename, std::ios::in );
+    file.open( filename, ios::in );
 
     //　チェック
     if ( !file.is_open() )
     {
-        std::cerr << "Error : ファイルオープンに失敗しました\n";
-        std::cerr << "File Name : " << filename << std::endl;
+        cerr << "Error : ファイルオープンに失敗しました\n";
+        cerr << "File Name : " << filename << endl;
         return false;
     }
 
@@ -450,28 +460,28 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].ambientMap, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[iMtlCount].ambientMapName, ( m_DirectoryPath + name ).c_str() );
         }
         // Diffuse Map
         else if ( 0 == strcmp( buf, "map_Kd" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].diffuseMap, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[iMtlCount].diffuseMapName, ( m_DirectoryPath + name ).c_str() );
         }
         // Specular Map
         else if ( 0 == strcmp( buf, "map_Ks" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].specularMap, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[iMtlCount].specularMapName, ( m_DirectoryPath + name ).c_str() );
         }
         // Bump Map
         else if ( 0 == strcmp( buf, "map_Bump" ) )
         {
             std::string name;
             file >> name;
-            strcpy_s( t_materials[iMtlCount].bumpMap, ( m_DirectoryPath + name ).c_str() );
+            strcpy_s( t_materials[iMtlCount].bumpMapName, ( m_DirectoryPath + name ).c_str() );
         }
 
         file.ignore( OBJ_BUFFER_LENGTH, '\n' );
@@ -498,15 +508,16 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
     return true;
 }
 
-//-------------------------------------------------------------------------------------------
-//      ファイルから読み込み処理を行います.
-//-------------------------------------------------------------------------------------------
-bool MeshOBJ::LoadFromFile( const char* filename )
+//-----------------------------------------------------------------------
+// Name : LoadFile()
+// Desc : メッシュファイルの読み込み
+//-----------------------------------------------------------------------
+bool MeshOBJ::LoadFile( const char* filename )
 {
     //　OBJ, MTLファイルを読み込み
     if ( !LoadOBJFile( filename ) )
     {
-        std::cerr << "Error : Load File Failed.\n";
+        cerr << "Error : メッシュファイルの読み込みに失敗しました\n";
         return false;
     }
 
@@ -515,22 +526,24 @@ bool MeshOBJ::LoadFromFile( const char* filename )
 }
 
 
-//-------------------------------------------------------------------------------------------
-//      描画処理を行います.
-//-------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// Name : Draw()
+// Desc : 描画処理
+//-----------------------------------------------------------------------
 void MeshOBJ::Draw()
 {
     for ( unsigned int i = 0; i<m_NumSubsets; i++ )
     {
         //　マテリアル
-        Material* pMat = &m_Materials[m_Subsets[i].materialID];
+        Material* pMat = &m_Materials[m_Subsets[i].materialIndex];
         SetMaterial( pMat );	
 
         //　三角形描画
         glInterleavedArrays( GL_T2F_N3F_V3F, 0, m_Vertices );
-        glDrawElements( GL_TRIANGLES, m_Subsets[i].count, GL_UNSIGNED_INT, &m_Indices[m_Subsets[i].offset] );
+        glDrawElements( GL_TRIANGLES, m_Subsets[i].faceCount, GL_UNSIGNED_INT, &m_Indices[m_Subsets[i].faceStart] );
     }
 }
+
 
 //------------------------------------------------------------------------
 // Name : GetNumVertices()
@@ -616,16 +629,18 @@ Material* MeshOBJ::GetMaterials()
 unsigned int* MeshOBJ::GetIndices()
 { return m_Indices; }
 
-//-------------------------------------------------------------------------------------------
-//      バウンディングボックスを取得します.
-//-------------------------------------------------------------------------------------------
-BoundingBox MeshOBJ::GetBox() const
+//-----------------------------------------------------------------------
+// Name : GetBox()
+// Desc : バウンディングボックスを取得
+//-----------------------------------------------------------------------
+BoundingBox MeshOBJ::GetBox()
 { return m_Box; }
 
-//-------------------------------------------------------------------------------------------
-//      バウンディングスフィアを取得します.
-//-------------------------------------------------------------------------------------------
-BoundingSphere MeshOBJ::GetSphere() const
+//-----------------------------------------------------------------------
+// Name : GetSphere()
+// Desc : バウンディングスフィアを取得
+//-----------------------------------------------------------------------
+BoundingSphere MeshOBJ::GetSphere()
 { return m_Sphere; }
 
 

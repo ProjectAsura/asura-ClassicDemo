@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------------
 #include <iostream>
 #include <GL/glut.h>
+#include <OBJLoader.h>
+#include <Mouse.h>
 
 
 namespace /* anonymous */ {
@@ -21,7 +23,29 @@ int     g_WindowPositionY   = 100;
 int     g_WindowWidth       = 512;
 int     g_WindowHeight      = 512;
 double  g_AspectRatio       = g_WindowWidth / g_WindowHeight;
-char    g_WindowTitle[]     = "First Polygon";
+char    g_WindowTitle[]     = "Mesh Loader (1) - OBJ -";
+Camera  g_Camera( 50.0f );
+MeshOBJ g_Mesh;
+
+
+//-------------------------------------------------------------------------------------------
+//      ライティングの設定を行います.
+//-------------------------------------------------------------------------------------------
+void SetLighting()
+{
+    GLfloat lightAmbientColor [4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat lightDiffuseColor [4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat lightSpecularColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
+    GLfloat lightPosition     [4] = { 0.0f, 100.0f, 100.0f, 0.0f };
+
+    glEnable( GL_LIGHTING);
+    glEnable( GL_LIGHT0);
+    glLightfv( GL_LIGHT0, GL_POSITION, lightPosition );
+    glLightfv( GL_LIGHT0, GL_AMBIENT,  lightAmbientColor );
+    glLightfv( GL_LIGHT0, GL_DIFFUSE,  lightDiffuseColor );
+    glLightfv( GL_LIGHT0, GL_SPECULAR, lightSpecularColor );
+}
+
 
 } // namespace /* anonymous */
 
@@ -77,6 +101,11 @@ bool OnInit()
     glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
     glEnable( GL_DEPTH_TEST );
 
+    SetLighting();
+
+    if ( !g_Mesh.LoadFile( "../res/test2.obj" ) )
+    { return false; }
+
     return true;
 }
 
@@ -85,6 +114,8 @@ bool OnInit()
 //-------------------------------------------------------------------------------------------
 void OnTerm( int code )
 {
+    g_Mesh.Release();
+
     std::exit( code );
 }
 
@@ -132,31 +163,26 @@ void OnDisplay()
     // 単位行列で初期化.
     glLoadIdentity();
 
-    // 視点の設定
-    gluLookAt( 
-        0.0, 0.0, -5.0,      // カメラ位置.
-        0.0, 0.0,  0.0,      // カメラの注視点.
-        0.0, 1.0,  0.0 );    // カメラの上向きベクトル.
-
-    // 三角形ポリゴンを描画.
-    glBegin(GL_TRIANGLES);
+    glPushMatrix();
     {
-        // 頂点1
-        glColor3d ( 1.0, 1.0, 0.0 );
-        glVertex3d( 0.0, 0.825, 0.0 );
+        g_Camera.Update();
 
-        // 頂点2
-        glColor3d (  0.0,  1.0, 1.0 );
-        glVertex3d( -1.0, -0.825, 0.0 );
-
-        // 頂点3
-        glColor3d ( 1.0,  0.0, 1.0 );
-        glVertex3d( 1.0, -0.825, 0.0 );
+        g_Mesh.Draw();
     }
-    glEnd();
+    glPopMatrix();
+
+    glPushMatrix();
+    {
+        g_Camera.DrawGizmo( g_WindowWidth, g_WindowHeight );
+    }
+    glPopMatrix();
 
     // コマンドを実行して，バッファを交換.
     glutSwapBuffers();
+
+#if defined(DEBUG) || defined(_DEBUG)
+    glutReportErrors();
+#endif
 }
 
 //-------------------------------------------------------------------------------------------
@@ -164,6 +190,8 @@ void OnDisplay()
 //-------------------------------------------------------------------------------------------
 void OnMouse( int button, int state, int x, int y )
 {
+    g_Camera.MouseInput( button, state, x, y );
+
     switch( button )
     {
     case GLUT_LEFT_BUTTON:
@@ -206,7 +234,9 @@ void OnMouse( int button, int state, int x, int y )
 //      マウスドラッグ時の処理です.
 //-------------------------------------------------------------------------------------------
 void OnMotion( int x, int y )
-{ /* DO_NOTHING */ }
+{
+    g_Camera.MouseMotion( x, y );
+}
 
 
 //-------------------------------------------------------------------------------------------

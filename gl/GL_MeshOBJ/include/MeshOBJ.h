@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 
+static const unsigned int NAME_LENGTH = 256;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex structure
@@ -35,7 +36,7 @@ struct Vertex
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct Subset
 {
-    std::string  materialName;
+    unsigned int materialID;
     unsigned int offset;
     unsigned int count;
 
@@ -49,27 +50,19 @@ struct Subset
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct Material
 {
-    int         id;
+    char        name[ NAME_LENGTH ];
     Vec3        ambient;
     Vec3        diffuse;
     Vec3        specular;
     float       shininess;
     float       alpha;
-    std::string ambientMap;
-    std::string diffuseMap;
-    std::string specularMap;
-    std::string bumpMap;
+    char        ambientMap [ NAME_LENGTH ];
+    char        diffuseMap [ NAME_LENGTH ];
+    char        specularMap[ NAME_LENGTH ];
+    char        bumpMap    [ NAME_LENGTH ];
 
     Material()
     { /* DO_NOTHING */ }
-
-    ~Material()
-    {
-        ambientMap .clear();
-        diffuseMap .clear();
-        specularMap.clear();
-        bumpMap    .clear();
-    }
 };
 
 
@@ -84,22 +77,6 @@ class MeshOBJ
     /* NOTHING */
 
 public:
-    //=======================================================================================
-    // type definitions
-    //=======================================================================================
-    typedef std::vector<Vertex>                 VertexList;
-    typedef std::vector<Subset>                 SubsetList;
-    typedef std::map<std::string, Material>     MaterialDictionary;
-    typedef std::vector<unsigned int>           IndexList;
-    typedef VertexList::iterator                VertexListItr;
-    typedef VertexList::const_iterator          VertexListCItr;
-    typedef SubsetList::iterator                SubsetListItr;
-    typedef SubsetList::const_iterator          SubsetListCItr;
-    typedef MaterialDictionary::iterator        MaterialDictionaryItr;
-    typedef MaterialDictionary::const_iterator  MaterialDictionaryCItr;
-    typedef IndexList::iterator                 IndexListItr;
-    typedef IndexList::const_iterator           IndexListCItr;
-
     //=======================================================================================
     // public variables.
     //=======================================================================================
@@ -116,16 +93,20 @@ public:
     void Release     ();
     void Draw        ();
 
-    VertexList&                 GetVertices    ();
-    SubsetList&                 GetSubsets     ();
-    MaterialDictionary&         GetMaterials   ();
-    IndexList&                  GetIndices     ();
-    const VertexList&           GetVertices    () const;
-    const SubsetList&           GetSubsets     () const;
-    const MaterialDictionary&   GetMaterials   () const;
-    const IndexList&            GetIndices     () const;
-    BoundingBox                 GetBox         () const;
-    BoundingSphere              GetSphere      () const;
+    unsigned int    GetNumVertices  ();
+    unsigned int    GetNumSubsets   ();
+    unsigned int    GetNumMaterials ();
+    unsigned int    GetNumIndices   ();
+    unsigned int    GetIndexData    ( unsigned int index );
+    unsigned int*   GetIndices      ();
+    Vertex          GetVertex       ( unsigned int index );
+    Vertex*         GetVertices     ();
+    Subset          GetSubset       ( unsigned int index );
+    Subset*         GetSubsets      ();
+    Material        GetMaterial     ( unsigned int index );
+    Material*       GetMaterials    ();
+    BoundingBox     GetBox          () const;
+    BoundingSphere  GetSphere       () const;
 
     MeshOBJ& operator = ( const MeshOBJ& value );
 
@@ -133,12 +114,17 @@ protected:
     //======================================================================================
     // protected variables.
     //======================================================================================
-    VertexList          m_Vertices;
-    SubsetList          m_Subsets;
-    MaterialDictionary  m_Materials;
-    IndexList           m_Indices;
-    BoundingBox         m_Box;
-    BoundingSphere      m_Sphere;
+    Vertex*         m_Vertices;
+    Subset*         m_Subsets;
+    Material*       m_Materials;
+    unsigned int*   m_Indices;
+    unsigned int    m_NumVertices;
+    unsigned int    m_NumSubsets;
+    unsigned int    m_NumMaterials;
+    unsigned int    m_NumIndices;
+    BoundingBox     m_Box;
+    BoundingSphere  m_Sphere;
+    std::string     m_DirectoryPath;
 
     //======================================================================================
     // protected methods.

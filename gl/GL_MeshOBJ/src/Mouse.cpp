@@ -9,6 +9,7 @@
 //-------------------------------------------------------------------------------------------
 #include <Mouse.h>
 #include <GL/glut.h>
+#include <iostream>
 
 
 namespace /* anonymous */ {
@@ -28,8 +29,8 @@ const float  AXIS_COLOR_BLACK[4] = {0.0, 0.0, 0.0, 1.0};
 //-------------------------------------------------------------------------------------------
 // Functions
 //-------------------------------------------------------------------------------------------
-template<class T> static inline T ToDeg(T rad) { return ( (rad)*(180.0/PI) ); }
-template<class T> static inline T ToRad(T deg) { return ( (deg)*(PI/180.0) ); }
+template<class T> static inline T ToDeg(T rad) { return (T)( (rad)*( 180.0 / PI ) ); }
+template<class T> static inline T ToRad(T deg) { return (T)( (deg)*( PI / 180.0 ) ); }
 
 
 //-------------------------------------------------------------------------------------------
@@ -49,29 +50,26 @@ void DrawDisk()
 } // namespace /* anonymous */
 
 
-///////////////////////////////////////////////////////////////////////////
-//　　Camera
-///////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Camera class
+/////////////////////////////////////////////////////////////////////////////////////////////
 
-//-------------------------------------------------------------------------------------------------------
-//　　Camera
-//　　Desc : コンストラクタ
-//-------------------------------------------------------------------------------------------------------
-Camera::Camera(float dist)
+//-------------------------------------------------------------------------------------------
+//      コンストラクタです.
+//-------------------------------------------------------------------------------------------
+Camera::Camera( float dist )
 : m_Distance( dist )
 { Reset(); }
 
-//-------------------------------------------------------------------------------------------------------
-//　　~Camera
-//　　Desc : デストラクタ
-//-------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      デストラクタです.
+//-------------------------------------------------------------------------------------------
 Camera::~Camera()
 { /* DO_NOTHING */ }
 
-//-------------------------------------------------------------------------------------------------------
-//　　MouseMotion
-//　　Desc：マウスの移動処理
-//-------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      マウスドラッグ時の処理です.
+//-------------------------------------------------------------------------------------------
 void Camera::MouseMotion( int x, int y ) 
 {
     //　左ボタンの処理
@@ -103,16 +101,14 @@ void Camera::MouseMotion( int x, int y )
         //　移動量を計算
         m_Middle.current.x = float(x) - m_Middle.before.x + m_Middle.after.x;
         m_Middle.current.y = float(y) - m_Middle.before.y + m_Middle.after.y;
-        m_Move.x =  m_Middle.current.x * 0.005;
-        m_Move.y = -m_Middle.current.y * 0.005;
+        m_Move.x =  m_Middle.current.x * 0.005f;
+        m_Move.y = -m_Middle.current.y * 0.005f;
     }
 }
 
-
-//-------------------------------------------------------------------------------------------------------
-//　　MouseInput
-//　　Desc：マウスのボタン処理
-//-------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      マウスボタン押下時の処理です.
+//-------------------------------------------------------------------------------------------
 void Camera::MouseInput( int button, int state, int x, int y ) 
 {
     switch( button )
@@ -174,19 +170,17 @@ void Camera::MouseInput( int button, int state, int x, int y )
 
 }
 
-
-//------------------------------------------------------------------------------------------------------
-//　　Reset
-//　　Desc：パラメータをリセットする
-//------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      パラメータをリセットします.
+//-------------------------------------------------------------------------------------------
 void Camera::Reset()
 {
-    m_Left.Reset();
-    m_Right.Reset();
+    m_Left  .Reset();
+    m_Right .Reset();
     m_Middle.Reset();
 
-    m_Angle.x = ToRad(45.0f);
-    m_Angle.y = ToRad(45.0f);
+    m_Angle.x = ToRad( 45.0f );
+    m_Angle.y = ToRad(-45.0f );
 
     m_Position  = Vec3( 0.0f, 0.0f, 0.0f );
     m_Target    = Vec3( 0.0f, 0.0f, 0.0f );
@@ -194,26 +188,34 @@ void Camera::Reset()
     m_Move      = Vec3( 0.0f, 0.0f, 0.0f );
 }
 
-
-//------------------------------------------------------------------------------------------------------
-//　　Set
-//　　Desc：視点の設定
-//------------------------------------------------------------------------------------------------------
-void Camera::Set()
+//-------------------------------------------------------------------------------------------
+//      ビュー行列の更新処理を行います.
+//-------------------------------------------------------------------------------------------
+void Camera::Update()
 {
-    float zoom = m_Distance;
-    zoom += m_Right.current.y/30.0;
+    float dist = m_Distance;
+    dist += ( m_Right.current.y / 30.0f );
 
-    //　視点位置を決定
-    m_Position.x = sinf( m_Angle.x ) * cosf( m_Angle.y );
-    m_Position.y = sinf( m_Angle.y );
-    m_Position.z = cosf( m_Angle.x ) * cosf( m_Angle.y );
-    m_Position    = ( m_Position * zoom ) + m_Move;
+    float sinH = sinf( m_Angle.x );
+    float cosH = cosf( m_Angle.x );
 
-    //　アップベクトルの設定
-    if( angle[1] > DegToRad(90.0)  &&  angle[1] < DegToRad(270.0) ) upvector[1] = -1.0;
-    else upvector[1] = 1.0;
+    float sinV = sinf( m_Angle.y );
+    float cosV = cosf( m_Angle.y );
 
+    //　視点位置を算出.
+    m_Position.x = m_Move.x + dist * ( -cosV * sinH );
+    m_Position.y = m_Move.y + dist * ( -sinV );
+    m_Position.z = m_Move.z + dist * ( -cosV * cosH );
+
+    // 注視点位置を算出.
+    m_Target.x = m_Move.x;
+    m_Target.y = m_Move.y;
+    m_Target.z = m_Move.z;
+
+    // 上向きベクトルを算出.
+    m_Upward.x = ( -sinV * sinH );
+    m_Upward.y = ( cosV );
+    m_Upward.z = ( -sinV * cosH );
 
     //　視点位置の設定
     gluLookAt(
@@ -223,17 +225,16 @@ void Camera::Set()
 
 }
 
-//------------------------------------------------------------------------------------------------------
-//　　RenderSubAxis
-//　　Desc：補助軸の描画
-//------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+//      ギズモを描画します.
+//-------------------------------------------------------------------------------------------
 void Camera::DrawGizmo(int w, int h)
 {
-    const double zoom = 15.0;
+    const float dist = 15.0f;
     Vec3 eye;
 
     //　ウィンドウ全体をビューポートにする
-    glViewport( w-100, h-100, 100, 100);
+    glViewport( w - 100, h - 100, 100, 100 );
 
     //　透視変換行列の設定
     glMatrixMode(GL_PROJECTION);
@@ -244,103 +245,125 @@ void Camera::DrawGizmo(int w, int h)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    eye.x = sinf( m_Angle.x ) * cosf( m_Angle.y ) * zoom;
-    eye.y = sinf( m_Angle.y ) * zoom;
-    eye.z = cosf( m_Angle.x ) * cosf( m_Angle.y ) * zoom;
+    float sinH = sinf( m_Angle.x );
+    float cosH = cosf( m_Angle.x );
+
+    float sinV = sinf( m_Angle.y );
+    float cosV = cosf( m_Angle.y );
 
     //　視点位置の設定
+    eye.x = dist * ( -cosV * sinH );
+    eye.y = dist * ( -sinV );
+    eye.z = dist * ( -cosV * cosH );
+
+    // ビュー行列を計算.
     gluLookAt( 
-        eye.x, eye.y, eye.z,
-        0.0, 0.0, 0.0,
-        m_Upward.x,m_Upward.y, m_Upward.z );
+        eye.x,      eye.y,      eye.z,
+        0.0,        0.0,        0.0,
+        m_Upward.x, m_Upward.y, m_Upward.z );
 
     //　ライティング無効
     GLboolean isLighting;
     glGetBooleanv( GL_LIGHTING, &isLighting );
-    glDisable(GL_LIGHTING);
+    glDisable( GL_LIGHTING );
 
     //　軸の文字
     glPushMatrix();
-    glColor4fv(AXIS_COLOR_BLACK); 
-    glRasterPos3d(2.25, 0.0, 0.0);
-    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, (int)AXIS_LABEL[0]);
-    glRasterPos3d(0.0, 2.25, 0.0);
-    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, (int)AXIS_LABEL[1]);
-    glRasterPos3d(0.0, 0.0, 2.25);
-    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, (int)AXIS_LABEL[2]);
+    {
+        glColor4fv( AXIS_COLOR_BLACK ); 
+        glRasterPos3d( 2.25, 0.0, 0.0 );
+        glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_10, (int)AXIS_LABEL[0] );
+        glRasterPos3d( 0.0, 2.25, 0.0 );
+        glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_10, (int)AXIS_LABEL[1] );
+        glRasterPos3d( 0.0, 0.0, 2.25 );
+        glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_10, (int)AXIS_LABEL[2] );
+    }
     glPopMatrix();
 
     //　ライティング有効
     if ( isLighting )
-        glEnable(GL_LIGHTING);
-
+    { glEnable(GL_LIGHTING); }
 
     //　x軸正
     glPushMatrix();
-    glColor4fv(AXIS_COLOR_RED);
-    glMaterialfv(GL_FRONT, GL_AMBIENT,  AXIS_COLOR_RED);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_RED);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, AXIS_COLOR_RED);
-    glTranslated(1.75, 0.0, 0.0);
-    glRotated(-90.0, 0.0, 1.0, 0.0);
-    glutSolidCone(0.35, 1.0, 10, 10);
-    DrawDisk();
+    {
+        glColor4fv( AXIS_COLOR_RED );
+        glMaterialfv( GL_FRONT, GL_AMBIENT,  AXIS_COLOR_RED );
+        glMaterialfv( GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_RED );
+        glMaterialfv( GL_FRONT, GL_SPECULAR, AXIS_COLOR_RED );
+        glTranslated( 1.75, 0.0, 0.0);
+        glRotated( -90.0, 0.0, 1.0, 0.0);
+        glutSolidCone( 0.35, 1.0, 10, 10);
+        DrawDisk();
+    }
     glPopMatrix();
 
     //　y軸正
     glPushMatrix();
-    glColor4fv(AXIS_COLOR_GREEN);
-    glMaterialfv(GL_FRONT, GL_AMBIENT,  AXIS_COLOR_GREEN);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_GREEN);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, AXIS_COLOR_GREEN);
-    glTranslated(0.0, 1.75, 0.0);
-    glRotated(90.0, 1.0, 0.0, 0.0);
-    glutSolidCone(0.35, 1.0, 10, 10);
-    DrawDisk();
+    {
+        glColor4fv( AXIS_COLOR_GREEN );
+        glMaterialfv( GL_FRONT, GL_AMBIENT,  AXIS_COLOR_GREEN );
+        glMaterialfv( GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_GREEN );
+        glMaterialfv( GL_FRONT, GL_SPECULAR, AXIS_COLOR_GREEN );
+        glTranslated( 0.0, 1.75, 0.0 );
+        glRotated( 90.0, 1.0, 0.0, 0.0 );
+        glutSolidCone( 0.35, 1.0, 10, 10 );
+        DrawDisk();
+    }
     glPopMatrix();
 
     //　z軸正
     glPushMatrix();
-    glColor4fv(AXIS_COLOR_BLUE);
-    glMaterialfv(GL_FRONT, GL_AMBIENT,  AXIS_COLOR_BLUE);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_BLUE);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, AXIS_COLOR_BLUE);
-    glTranslated(0.0, 0.0, 1.75);
-    glRotated(180.0, 1.0, 0.0, 0.0);
-    glutSolidCone(0.35, 1.0, 10, 10);
-    DrawDisk();
+    {
+        glColor4fv( AXIS_COLOR_BLUE );
+        glMaterialfv( GL_FRONT, GL_AMBIENT,  AXIS_COLOR_BLUE );
+        glMaterialfv( GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_BLUE );
+        glMaterialfv( GL_FRONT, GL_SPECULAR, AXIS_COLOR_BLUE );
+        glTranslated( 0.0, 0.0, 1.75 );
+        glRotated( 180.0, 1.0, 0.0, 0.0 );
+        glutSolidCone( 0.35, 1.0, 10, 10 );
+        DrawDisk();
+    }
     glPopMatrix();
 
     //　キューブ
     glPushMatrix();
-    glColor4fv(AXIS_COLOR_CYAN);
-    glMaterialfv(GL_FRONT, GL_AMBIENT,  AXIS_COLOR_CYAN);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_CYAN);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, AXIS_COLOR_CYAN);
-    glutSolidCube(1.0);
+    {
+        glColor4fv( AXIS_COLOR_CYAN );
+        glMaterialfv( GL_FRONT, GL_AMBIENT,  AXIS_COLOR_CYAN );
+        glMaterialfv( GL_FRONT, GL_DIFFUSE,  AXIS_COLOR_CYAN );
+        glMaterialfv( GL_FRONT, GL_SPECULAR, AXIS_COLOR_CYAN );
+        glutSolidCube( 1.0 );
+    }
     glPopMatrix();
 
     //　x軸負
     glPushMatrix();
-    glTranslated(-1.75, 0.0, 0.0);
-    glRotated(90.0, 0.0, 1.0, 0.0);
-    glutSolidCone(0.35, 1.0, 10, 10);
-    DrawDisk();
+    {
+        glTranslated( -1.75, 0.0, 0.0 );
+        glRotated( 90.0, 0.0, 1.0, 0.0 );
+        glutSolidCone( 0.35, 1.0, 10, 10 );
+        DrawDisk();
+    }
     glPopMatrix();
 
     //　y軸負
     glPushMatrix();
-    glTranslated(0.0, -1.75, 0.0);
-    glRotated(-90.0, 1.0, 0.0, 0.0);
-    glutSolidCone(0.35, 1.0, 10, 10);
-    DrawDisk();
+    {
+        glTranslated( 0.0, -1.75, 0.0 );
+        glRotated( -90.0, 1.0, 0.0, 0.0 );
+        glutSolidCone( 0.35, 1.0, 10, 10 );
+        DrawDisk();
+    }
     glPopMatrix();
 
     //　z軸負
     glPushMatrix();
-    glTranslated(0.0, 0.0, -1.75);
-    glutSolidCone(0.35, 1.0, 10, 10);
-    rawDisk();
+    {
+        glTranslated( 0.0, 0.0, -1.75 );
+        glutSolidCone( 0.35, 1.0, 10, 10 );
+        DrawDisk();
+    }
     glPopMatrix();
 
 }

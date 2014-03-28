@@ -25,6 +25,11 @@ struct Vec2
     , y( ny )
     { /* DO_NOTHING */ }
 
+    Vec2( const Vec2& value )
+    : x( value.x )
+    , y( value.y )
+    { /* DO_NOTHING */ }
+
     Vec2 operator + ( const Vec2& value ) const
     { return Vec2( x + value.x, y + value.y ); }
 
@@ -79,6 +84,12 @@ struct Vec3
     : x( nx )
     , y( ny )
     , z( nz )
+    { /* DO_NOTHING */ }
+
+    Vec3( const Vec3& value )
+    : x( value.x )
+    , y( value.y )
+    , z( value.z )
     { /* DO_NOTHING */ }
 
     Vec3 operator + ( const Vec3& value ) const
