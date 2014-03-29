@@ -125,7 +125,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         { m_DirectoryPath = tfile.substr( 0, idx + 1 ); }
     }
 
-    //　ファイルを開く
+    // ファイルを開く
     file.open( filename, std::ios::in );
 
     //　チェック
@@ -136,12 +136,12 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         return false;
     }
 
-    //　ループ
+    // ループ
     for( ;; )
     {
         file >> buf;
-        if ( !file )
-            break;
+        if ( !file || file.eof() )
+        { break; }
 
         //　コメント
         if ( 0 == strcmp( buf, "#" ) )
@@ -150,9 +150,8 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         //　頂点座標
         else if ( 0 == strcmp( buf, "v" ) )
         {
-            float x, y, z;
-            file >> x >> y >> z;
-            Vec3 v( x, y, z );
+            Vec3 v;
+            file >> v.x >> v.y >> v.z;
             positions.push_back( v );
 
             //　バウンディングボックスの初期化
@@ -169,17 +168,17 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         //　テクスチャ座標
         else if ( 0 == strcmp( buf, "vt" ) )
         {
-            float u, v;
-            file >> u >> v;
-            texcoords.push_back( Vec2( u, v ) );
+            Vec2 uv;
+            file >> uv.x >> uv.y;
+            texcoords.push_back( uv );
         }
 
         //　法線ベクトル
         else if ( 0 == strcmp( buf, "vn" ) )
         {
-            float x, y, z;
-            file >> x >> y >> z;
-            normals.push_back( Vec3( x, y, z) );
+            Vec3 n;
+            file >> n.x >> n.y >> n.z;
+            normals.push_back( n );
         }
 
         //　面

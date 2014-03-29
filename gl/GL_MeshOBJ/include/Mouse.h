@@ -23,6 +23,7 @@ typedef enum MouseState
     None        //!< 何もされていない.
 };
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Cursor class
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,6 +38,14 @@ struct Cursor
     Cursor()
     : x( 0.0f )
     , y( 0.0f )
+    { /* DO_NOTHING */ }
+
+    //---------------------------------------------------------------------------------------
+    //! @brief      コピーコンストラクタです.
+    //---------------------------------------------------------------------------------------
+    Cursor( const Cursor& value )
+    : x ( value.x )
+    , y ( value.y )
     { /* DO_NOTHING */ }
 
     //---------------------------------------------------------------------------------------
@@ -85,6 +94,16 @@ struct MouseButton
     { /* DO_NOTHING */ }
 
     //---------------------------------------------------------------------------------------
+    //! @brief      コピーコンストラクタです.
+    //---------------------------------------------------------------------------------------
+    MouseButton( const MouseButton& value )
+    : before    ( value.before )
+    , current   ( value.current )
+    , after     ( value.after )
+    , state     ( value.state )
+    { /* DO_NOTHING */ }
+
+    //---------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------
     ~MouseButton()
@@ -101,6 +120,7 @@ struct MouseButton
         state = None;
     }
 };
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Camara class
@@ -121,14 +141,14 @@ public:
     //=======================================================================================
     // public methods.
     //=======================================================================================
-    Camera(float distance=5.0);
+    Camera();
     Camera( const Camera& value );
     virtual ~Camera();
-    void Reset();
-    void MouseInput(int button, int state, int x, int y);
-    void MouseMotion(int x, int y);
+    void Reset( float distance );
+    void MouseInput( int button, int state, int x, int y );
+    void MouseMotion( int x, int y );
     void Update();
-    void DrawGizmo(int w, int h);
+    void DrawGizmo( int w, int h );
 
     Camera& operator = ( const Camera& value );
 
@@ -164,5 +184,4 @@ private:
 };
 
 
-
-#endif		//　_MOUSE_WIN_H_INCLUDED_
+#endif //__MOUSE_H__

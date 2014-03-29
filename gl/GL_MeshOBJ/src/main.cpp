@@ -4,11 +4,23 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------
 
+
+#if defined(DEBUG) || defined(_DEBUG)
+    #define _CRTDBG_MAP_ALLOC
+    #include <crtdbg.h>
+#endif//defined(DEBUG) || defined(_DEBUG)
+
+#if defined(_NDEBUG) || defined(NDEBUG)
+    // リリースビルド時はコンソールを非表示化.
+    #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+#endif//defined(_NDEBUG) || defined(NDEBUG)
+
+
 //-------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------
 #include <iostream>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 #include <MeshOBJ.h>
 #include <Mouse.h>
 
@@ -24,7 +36,7 @@ int     g_WindowWidth       = 512;
 int     g_WindowHeight      = 512;
 double  g_AspectRatio       = g_WindowWidth / g_WindowHeight;
 char    g_WindowTitle[]     = "Mesh Loader (1) - OBJ -";
-Camera  g_Camera( 50.0f );
+Camera  g_Camera;
 MeshOBJ g_Mesh;
 
 
@@ -49,11 +61,12 @@ void SetLighting()
 
 } // namespace /* anonymous */
 
+
 //-------------------------------------------------------------------------------------------
 // Forward Declarations.
 //-------------------------------------------------------------------------------------------
 bool    OnInit();
-void    OnTerm( int code );
+void    OnTerm();
 void    OnDisplay();
 void    OnIdle();
 void    OnReshape( int x, int y );
@@ -70,24 +83,31 @@ void    OnSpecial( int key, int x, int y );
 //-------------------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-    __glutInitWithExit( &argc, argv, OnTerm );
-    glutInitWindowPosition( g_WindowPositionX, g_WindowPositionY );
-    glutInitWindowSize( g_WindowWidth, g_WindowHeight );
-    glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE );
-    __glutCreateWindowWithExit( g_WindowTitle, OnTerm );
-    glutDisplayFunc( OnDisplay );
-    glutReshapeFunc( OnReshape );
-    glutIdleFunc( OnIdle );
-    glutMouseFunc( OnMouse );
-    glutMotionFunc( OnMotion );
-    glutPassiveMotionFunc( OnPassiveMotion );
-    glutKeyboardFunc( OnKeyboard );
-    glutSpecialFunc( OnSpecial );
+#if defined(DEBUG) || defined(_DEBUG)
+    // メモリリーク検出
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif//defined(DEBUG) || defined(_DEBUG)
+    {
+        glutInit( &argc, argv );
+        glutSetOption( GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS );
+        glutInitWindowPosition( g_WindowPositionX, g_WindowPositionY );
+        glutInitWindowSize( g_WindowWidth, g_WindowHeight );
+        glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE );
+        glutCreateWindow( g_WindowTitle );
+        glutDisplayFunc( OnDisplay );
+        glutReshapeFunc( OnReshape );
+        glutIdleFunc( OnIdle );
+        glutMouseFunc( OnMouse );
+        glutMotionFunc( OnMotion );
+        glutPassiveMotionFunc( OnPassiveMotion );
+        glutKeyboardFunc( OnKeyboard );
+        glutSpecialFunc( OnSpecial );
 
-    if ( OnInit() )
-    { glutMainLoop(); }
-    else
-    { OnTerm( -1 ); }
+        if ( OnInit() )
+        { glutMainLoop(); }
+
+        OnTerm();
+    }
 
     return 0;
 }
@@ -98,25 +118,36 @@ int main( int argc, char** argv )
 //-------------------------------------------------------------------------------------------
 bool OnInit()
 {
-    glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
-    glEnable( GL_DEPTH_TEST );
-
-    SetLighting();
-
+    // メッシュを読み込み.
     if ( !g_Mesh.LoadFromFile( "../res/test2.obj" ) )
     { return false; }
 
+    // バウンディングスフィアを取得.
+    BoundingSphere sphere = g_Mesh.GetSphere();
+
+    // カメラを設定.
+    g_Camera.Reset( sphere.radius * 2.5f );
+
+    // 背景色を設定.
+    glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
+
+    // 深度テスト有効化.
+    glEnable( GL_DEPTH_TEST );
+
+    // ライティングのセットアップ.
+    SetLighting();
+
+    // 正常終了.
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
 //      終了処理です.
 //-------------------------------------------------------------------------------------------
-void OnTerm( int code )
+void OnTerm()
 {
+    // メッシュを解放.
     g_Mesh.Release();
-
-    std::exit( code );
 }
 
 
@@ -165,14 +196,17 @@ void OnDisplay()
 
     glPushMatrix();
     {
+        // カメラの更新処理.
         g_Camera.Update();
 
+        // メッシュを描画.
         g_Mesh.Draw();
     }
     glPopMatrix();
 
     glPushMatrix();
     {
+        // ギズモを描画.
         g_Camera.DrawGizmo( g_WindowWidth, g_WindowHeight );
     }
     glPopMatrix();
@@ -181,6 +215,7 @@ void OnDisplay()
     glutSwapBuffers();
 
 #if defined(DEBUG) || defined(_DEBUG)
+    // エラーチェック.
     glutReportErrors();
 #endif
 }
@@ -255,7 +290,7 @@ void OnKeyboard( unsigned char key, int x, int y )
     {
     // ESCキー.
     case '\033':
-        { OnTerm( 0 ); }
+        { OnTerm( ); }
         break;
 
     default:

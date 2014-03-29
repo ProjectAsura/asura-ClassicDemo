@@ -57,9 +57,23 @@ void DrawDisk()
 //-------------------------------------------------------------------------------------------
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------
-Camera::Camera( float dist )
-: m_Distance( dist )
-{ Reset(); }
+Camera::Camera()
+{ Reset( 5.0f ); }
+
+//-------------------------------------------------------------------------------------------
+//      コピーコンストラクタです.
+//-------------------------------------------------------------------------------------------
+Camera::Camera( const Camera& value )
+: m_Right   ( value.m_Right )
+, m_Left    ( value.m_Left )
+, m_Middle  ( value.m_Middle )
+, m_Distance( value.m_Distance )
+, m_Angle   ( value.m_Angle )
+, m_Position( value.m_Position )
+, m_Target  ( value.m_Target )
+, m_Upward  ( value.m_Upward )
+, m_Move    ( value.m_Move )
+{ /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------
 //      デストラクタです.
@@ -76,31 +90,31 @@ void Camera::MouseMotion( int x, int y )
     if ( m_Left.state == Push )
     {
         //　移動量を計算
-        m_Left.current.x = float(x) - m_Left.before.x + m_Left.after.x;
-        m_Left.current.y = float(y) - m_Left.before.y + m_Left.after.y;
+        m_Left.current.x = ( float(x) - m_Left.before.x ) + m_Left.after.x;
+        m_Left.current.y = ( float(y) - m_Left.before.y ) + m_Left.after.y;
 
         if ( m_Left.current.y >= 360.0 ) 
         { m_Left.current.y -= 360.0; }
         else if ( m_Left.current.y < 0.0 )
         { m_Left.current.y += 360.0; }
 
-        m_Angle.x = ToRad(m_Angle.x + m_Left.current.x);
-        m_Angle.y = ToRad(m_Angle.y + m_Left.current.y);
+        m_Angle.x = ToRad( m_Left.current.x );
+        m_Angle.y = ToRad( m_Left.current.y );
     }
 
     //　右ボタンの処理
     if ( m_Right.state == Push )
     {
-        m_Right.current.x  =  float(x) - m_Right.before.x + m_Right.after.x;
-        m_Right.current.y  = -float(y) - m_Right.before.y + m_Right.after.y;
+        m_Right.current.x  = (  float(x) - m_Right.before.x ) + m_Right.after.x;
+        m_Right.current.y  = ( -float(y) - m_Right.before.y ) + m_Right.after.y;
     }
 
     //　中ボタンの処理
     if ( m_Middle.state == Push )
     {
         //　移動量を計算
-        m_Middle.current.x = float(x) - m_Middle.before.x + m_Middle.after.x;
-        m_Middle.current.y = float(y) - m_Middle.before.y + m_Middle.after.y;
+        m_Middle.current.x = ( float(x) - m_Middle.before.x ) + m_Middle.after.x;
+        m_Middle.current.y = ( float(y) - m_Middle.before.y ) + m_Middle.after.y;
         m_Move.x =  m_Middle.current.x * 0.005f;
         m_Move.y = -m_Middle.current.y * 0.005f;
     }
@@ -173,14 +187,19 @@ void Camera::MouseInput( int button, int state, int x, int y )
 //-------------------------------------------------------------------------------------------
 //      パラメータをリセットします.
 //-------------------------------------------------------------------------------------------
-void Camera::Reset()
+void Camera::Reset( float distance )
 {
+    m_Distance  = distance;
+
     m_Left  .Reset();
     m_Right .Reset();
     m_Middle.Reset();
 
-    m_Angle.x = ToRad( 45.0f );
-    m_Angle.y = ToRad(-45.0f );
+    m_Angle.x = ToRad(  45.0f ); //  45度.
+    m_Angle.y = ToRad( 315.0f ); // -45度.
+
+    m_Left.after.x =  45.0f; //  45度.
+    m_Left.after.y = 315.0f; // -45度.
 
     m_Position  = Vec3( 0.0f, 0.0f, 0.0f );
     m_Target    = Vec3( 0.0f, 0.0f, 0.0f );
@@ -195,6 +214,8 @@ void Camera::Update()
 {
     float dist = m_Distance;
     dist += ( m_Right.current.y * 0.5f );
+
+    // ぶっ飛ばないように制限.
     if ( dist < FLT_EPSILON )
     { dist = FLT_EPSILON; }
 
@@ -208,6 +229,7 @@ void Camera::Update()
     m_Position.x = m_Move.x + dist * ( -cosV * sinH );
     m_Position.y = m_Move.y + dist * ( -sinV );
     m_Position.z = m_Move.z + dist * ( -cosV * cosH );
+
 
     // 注視点位置を算出.
     m_Target.x = m_Move.x;
@@ -368,4 +390,22 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
+}
+
+//-------------------------------------------------------------------------------------------
+//      代入演算子です.
+//-------------------------------------------------------------------------------------------
+Camera& Camera::operator = ( const Camera& value )
+{
+    m_Right     = value.m_Right;
+    m_Left      = value.m_Left;
+    m_Middle    = value.m_Middle;
+    m_Distance  = value.m_Distance;
+    m_Angle     = value.m_Angle;
+    m_Position  = value.m_Position;
+    m_Target    = value.m_Target;
+    m_Upward    = value.m_Upward;
+    m_Move      = value.m_Move;
+
+    return (*this);
 }
