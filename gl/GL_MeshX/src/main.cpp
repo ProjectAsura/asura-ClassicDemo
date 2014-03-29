@@ -21,7 +21,7 @@
 //-------------------------------------------------------------------------------------------
 #include <iostream>
 #include <GL/freeglut.h>
-#include <MeshOBJ.h>
+#include <MeshX.h>
 #include <Mouse.h>
 
 
@@ -35,9 +35,9 @@ int     g_WindowPositionY   = 100;
 int     g_WindowWidth       = 512;
 int     g_WindowHeight      = 512;
 double  g_AspectRatio       = g_WindowWidth / g_WindowHeight;
-char    g_WindowTitle[]     = "Mesh Loader (1) - OBJ -";
+char    g_WindowTitle[]     = "Mesh Loader (2) - X -";
 Camera  g_Camera;
-MeshOBJ g_Mesh;
+ModelX  g_Model;
 
 
 //-------------------------------------------------------------------------------------------
@@ -118,12 +118,12 @@ int main( int argc, char** argv )
 //-------------------------------------------------------------------------------------------
 bool OnInit()
 {
-    // メッシュを読み込み.
-    if ( !g_Mesh.LoadFromFile( "../res/test2.obj" ) )
+    // モデルを読み込み.
+    if ( !g_Model.LoadFromFile( "../res/dosei.x" ) )
     { return false; }
 
     // バウンディングスフィアを取得.
-    BoundingSphere sphere = g_Mesh.GetSphere();
+    BoundingSphere sphere = g_Model.GetSphere();
 
     // カメラを設定.
     g_Camera.Reset( sphere.radius * 2.5f );
@@ -146,8 +146,8 @@ bool OnInit()
 //-------------------------------------------------------------------------------------------
 void OnTerm()
 {
-    // メッシュを解放.
-    g_Mesh.Release();
+    // モデルを解放.
+    g_Model.Release();
 }
 
 
@@ -199,8 +199,8 @@ void OnDisplay()
         // カメラの更新処理.
         g_Camera.Update();
 
-        // メッシュを描画.
-        g_Mesh.Draw();
+        // モデルを描画.
+        g_Model.Draw();
     }
     glPopMatrix();
 

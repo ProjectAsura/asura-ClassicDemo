@@ -62,10 +62,9 @@ struct Face
 struct Material
 {
     std::string name;       //!< マテリアル名です.
-    Vec4        ambient;    //!< 環境色です.
     Vec4        diffuse;    //!< 拡散反射色です.
-    Vec4        specular;   //!< 鏡面反射色です.
-    Vec4        emissive;   //!< 自己発光色です.
+    Vec3        specular;   //!< 鏡面反射色です.
+    Vec3        emissive;   //!< 自己発光色です.
     float       power;      //!< 鏡面反射強度です.
     std::string texture;    //!< テクスチャ名です.
 
@@ -74,7 +73,6 @@ struct Material
     //--------------------------------------------------------------------------------------
     Material()
     : name      ()
-    , ambient   ()
     , diffuse   ()
     , specular  ()
     , emissive  ()
@@ -87,7 +85,6 @@ struct Material
     //--------------------------------------------------------------------------------------
     Material( const Material& value )
     : name      ( value.name )
-    , ambient   ( value.ambient )
     , diffuse   ( value.diffuse )
     , specular  ( value.specular )
     , emissive  ( value.emissive )
@@ -151,6 +148,17 @@ struct MeshX
         normals  .clear();
         texcoords.clear();
         faces    .clear();
+    }
+
+    //--------------------------------------------------------------------------------------
+    //! @brief      最適化します.
+    //--------------------------------------------------------------------------------------
+    void Optimize()
+    {
+        positions.shrink_to_fit();
+        normals  .shrink_to_fit();
+        texcoords.shrink_to_fit();
+        faces    .shrink_to_fit();
     }
 };
 
