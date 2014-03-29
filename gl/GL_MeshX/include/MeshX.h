@@ -187,8 +187,8 @@ public:
     virtual ~ModelX();
 
     bool LoadFromFile( const char* filename );
-    void Release();
-    void Draw   ();
+    void Release     ();
+    void Draw        ();
 
     std::vector<MeshX>&     GetMeshes   ();
     std::vector<Material>&  GetMaterials();

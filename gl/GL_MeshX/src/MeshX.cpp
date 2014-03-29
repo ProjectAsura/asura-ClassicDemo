@@ -107,6 +107,9 @@ public:
     int GetAsInt()
     { return (int)atoi( m_Token ); }
 
+    //-------------------------------------------------------------------------------------
+    //! @brief      トークンをstd::stringとして取得します.
+    //-------------------------------------------------------------------------------------
     std::string GetAsString()
     {
         char temp[256];
@@ -165,6 +168,9 @@ public:
         return Vec4( x, y, z, w );
     }
 
+    //-------------------------------------------------------------------------------------
+    //! @brief      次のトークンをstd::stringとして取得します.
+    //-------------------------------------------------------------------------------------
     std::string GetNextAsString()
     {
         GetNext();
@@ -250,6 +256,9 @@ private:
 // ModelX class
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+//-----------------------------------------------------------------------------------------
+//      コンストラクタです.
+//-----------------------------------------------------------------------------------------
 ModelX::ModelX()
 : m_Meshes      ()
 , m_Materials   ()
@@ -257,6 +266,9 @@ ModelX::ModelX()
 , m_Sphere      ()
 { /* DO_NOTHING */ }
 
+//-----------------------------------------------------------------------------------------
+//      コピーコンストラクタです.
+//-----------------------------------------------------------------------------------------
 ModelX::ModelX( const ModelX& value )
 : m_Meshes      ( value.m_Meshes )
 , m_Materials   ( value.m_Materials )
@@ -264,23 +276,34 @@ ModelX::ModelX( const ModelX& value )
 , m_Sphere      ( value.m_Sphere )
 { /* DO_NOTHING */ }
 
+//-----------------------------------------------------------------------------------------
+//      デストラクタです.
+//-----------------------------------------------------------------------------------------
 ModelX::~ModelX()
 { Release(); }
 
+//-----------------------------------------------------------------------------------------
+//      解放処理を行います.
+//-----------------------------------------------------------------------------------------
 void ModelX::Release()
 {
     m_Meshes   .clear();
     m_Materials.clear();
 }
 
+//-----------------------------------------------------------------------------------------
+//      ファイルから読み込みします.
+//-----------------------------------------------------------------------------------------
 bool ModelX::LoadFromFile( const char* filename )
 {
+    // 引数のチェック.
     if ( filename == nullptr )
     {
         ELOG( "Error : Invalid Argument." );
         return false;
     }
 
+    // ファイルを開く.
     FILE* pFile;
     errno_t err = fopen_s( &pFile, filename, "rb" );
     if ( err != 0 )
@@ -289,12 +312,14 @@ bool ModelX::LoadFromFile( const char* filename )
         return false;
     }
 
+    // ファイルサイズを調べる.
     long curr = ftell( pFile );
     fseek( pFile, 0, SEEK_END );
     long end = ftell( pFile );
     fseek( pFile, curr, SEEK_SET );
     size_t size = end - curr;
 
+    // メモリを一気に確保.
     char* pBuffer = new (std::nothrow) char [ size ];
     if ( pBuffer == nullptr )
     {
@@ -303,9 +328,13 @@ bool ModelX::LoadFromFile( const char* filename )
         return false;
     }
 
+    // 一気に読み込み.
     size_t readSize = fread( pBuffer, sizeof(char), size, pFile );
+
+    // ファイルを閉じる.
     fclose( pFile );
 
+    // 読み込みサイズをチェック.
     if ( readSize != size )
     {
         ELOG( "Error : Read Size Not Matched." );
@@ -313,150 +342,207 @@ bool ModelX::LoadFromFile( const char* filename )
         return false;
     }
 
+    // トーカナイザーを用意.
     Token token( pBuffer );
 
-    int meshCount = -1;
+    // メッシュのインデックス.
+    int meshID = -1;
 
+    // バッファ最後までループ.
     while( !token.IsEmpty() )
     {
+        // トークン取得.
         token.GetNext();
 
+        // テンプレートノード.
         if ( token.IsValid( "template") )
         {
+            // ノードを読み飛ばす.
             token.SkipNode();
-        }// endif "template"
+        }
+        // メッシュノード.
         else if ( token.IsValid( "Mesh" ) )
         {
+            // トークン取得.
             token.GetNext();
+
+            // トークンが"{"出ない場合.
             if ( !token.IsValid( "{" ) )
             {
+                /* この実装ではメッシュファイル名は使わない */
+
                 token.IsNextValid( "{" );
             }
 
+            // メッシュを追加.
             {
-                MeshX m;
-                m_Meshes.push_back( m );
-                meshCount++;
-                //m_Meshes[meshCount];
+                MeshX mesh;
+                m_Meshes.push_back( mesh );
+
+                // メッシュ番号を更新.
+                meshID++;
             }
 
+            // 位置座標数を取得.
             int posCount = token.GetNextAsInt();
-            m_Meshes[meshCount].positions.resize( posCount );
-            for( int i=0; i<posCount; ++i )
-            {
-                m_Meshes[meshCount].positions[i] = token.GetNextAsVec3();
-            }
 
+            // メモリを確保.
+            m_Meshes[ meshID ].positions.resize( posCount );
+
+            // 位置座標データを読み込む.
+            for( int i=0; i<posCount; ++i )
+            { m_Meshes[ meshID ].positions[i] = token.GetNextAsVec3(); }
+
+            // 面数を取得.
             int faceCount = token.GetNextAsInt();
-            m_Meshes[meshCount].faces.resize( faceCount );
+
+            // メモリを確保.
+            m_Meshes[ meshID ].faces.resize( faceCount );
+
+            // 面データを読み取る..
             for( int i=0; i<faceCount; ++i )
             {
+                // 面の構成要素数を取得し，設定する.
                 int element = token.GetNextAsInt();
+                m_Meshes[ meshID ].faces[i].element = element;
 
-                m_Meshes[meshCount].faces[i].element = element;
+                // インデックスを読み取る.
                 for( int j=0; j<element; ++j )
                 {
                     int index = token.GetNextAsInt();
-                    m_Meshes[meshCount].faces[i].indexP[j] = index;
-                    m_Meshes[meshCount].faces[i].indexU[j] = index;
+                    m_Meshes[ meshID ].faces[ i ].indexP[ j ] = index;
+                    m_Meshes[ meshID ].faces[ i ].indexU[ j ] = index;
                 }
             }
-        }// endif "Mesh"
+        }
+        // メッシュ法線ベクトルノード.
         else if ( token.IsValid( "MeshNormals" ) )
         {
             token.IsNextValid( "{" );
 
+            // 法線ベクトルを数を取得.
             size_t normalCount = token.GetNextAsInt();
-            m_Meshes[meshCount].normals.resize( normalCount );
-            for( size_t i=0; i<normalCount; ++i )
-            {
-                m_Meshes[meshCount].normals[i] = token.GetNextAsVec3();
-            }
 
+            // メモリを確保.
+            m_Meshes[ meshID ].normals.resize( normalCount );
+
+            // 法線ベクトルデータを読み取る.
+            for( size_t i=0; i<normalCount; ++i )
+            { m_Meshes[ meshID ].normals[ i ] = token.GetNextAsVec3(); }
+
+            // 面数を取得.
             size_t faceCount = token.GetNextAsInt();
-            if ( faceCount != m_Meshes[meshCount].faces.size() )
+
+            // 面数が一致することを確認.
+            if ( faceCount != m_Meshes[ meshID ].faces.size() )
             {
+                // エラーログ出力.
                 ELOG( "Error : Face Count Not Matched." );
+
+                // メモリを解放.
                 SAFE_DELETE_ARRAY( pBuffer );
                 Release();
+
+                // 異常終了.
                 return false;
             }
 
+            // 面データを読み取る.
             for( size_t i=0; i<faceCount; ++i )
             {
+                // 面の構成要素数を取得.
                 int element = token.GetNextAsInt();
+
+                // 法線ベクトルインデックスを読み取る.
                 for( int j=0; j<element; ++j )
-                {
-                    int index = token.GetNextAsInt();
-                    m_Meshes[meshCount].faces[i].indexN[j] = index;
-                }
+                { m_Meshes[ meshID ].faces[ i ].indexN[ j ] = token.GetNextAsInt(); }
             }
-        }// end if "MeshNormals"
+        }
+        // メッシュテクスチャ座標ノード.
         else if ( token.IsValid( "MeshTextureCoords" ) )
         {
             token.IsNextValid( "{" );
 
+            // テクスチャ座標数を取得.
             size_t uvCount = token.GetNextAsInt();
-            m_Meshes[meshCount].texcoords.resize( uvCount );
+
+            // メモリを確保.
+            m_Meshes[ meshID ].texcoords.resize( uvCount );
+
+            // テクスチャ座標データを読み取る.
             for( size_t i=0; i<uvCount; ++i )
-            {
-                m_Meshes[meshCount].texcoords[i] = token.GetNextAsVec2();
-            }
-        }// end if "MeshTextureCoords"
+            { m_Meshes[ meshID ].texcoords[i] = token.GetNextAsVec2(); }
+        }
+        // メッシュマテリアルリストノード.
         else if ( token.IsValid( "MeshMaterialList" ) )
         {
             token.IsNextValid( "{" );
+
+            // マテリアル数を取得.
             size_t materialCount = token.GetNextAsInt();
+
+            // メモリを確保.
             m_Materials.resize( materialCount );
 
+            // 面数を取得.
             size_t faceCount = token.GetNextAsInt();
-            if ( faceCount != m_Meshes[meshCount].faces.size() )
+
+            // 面数が一致することを確認.
+            if ( faceCount != m_Meshes[ meshID ].faces.size() )
             {
+                // エラーログ出力.
                 ELOG( "Error : Face Count Not Matched." );
+
+                // メモリを解放.
                 SAFE_DELETE_ARRAY( pBuffer );
                 Release();
+
+                // 異常終了.
                 return false;
             }
 
+            // マテリアルインデックスデータを読み取る.
             for( size_t i=0; i<faceCount; ++i )
-            {
-                m_Meshes[meshCount].faces[i].indexM = token.GetNextAsInt();
-            }
+            { m_Meshes[ meshID ].faces[ i ].indexM = token.GetNextAsInt(); }
 
+            // マテリアルデータを読み取る.
             for( size_t i=0; i<materialCount; ++i )
             {
                 token.IsNextValid("Material");
                 token.GetNext();
 
+                // マテリアル名を取得.
                 if ( !token.IsValid( "{" ) )
                 {
-                    m_Materials[i].name = token.GetAsString();
+                    m_Materials[ i ].name = token.GetAsString();
                     token.IsNextValid( "{" );
                 }
                 else
                 {
+                    // 取得できない場合は適当な名前を付ける.
                     char temp[ 256 ];
                     sprintf_s( temp, "material_%u", i );
-                    m_Materials[i].name = std::string(temp);
+                    m_Materials[ i ].name = std::string(temp);
                 }
 
-                m_Materials[i].diffuse  = token.GetNextAsVec4();
-                m_Materials[i].power    = token.GetNextAsFloat();
-                m_Materials[i].specular = token.GetNextAsVec3();
-                m_Materials[i].emissive = token.GetNextAsVec3();
+                m_Materials[ i ].diffuse  = token.GetNextAsVec4();
+                m_Materials[ i ].power    = token.GetNextAsFloat();
+                m_Materials[ i ].specular = token.GetNextAsVec3();
+                m_Materials[ i ].emissive = token.GetNextAsVec3();
 
+                // テクスチャファイルデータのチェック.
                 if ( !token.IsNextValid( "}" ) )
                 {
                     if ( token.IsValid( "TextureFileName" ) )
                     {
                         token.IsNextValid( "{" );
-                        m_Materials[i].texture = token.GetNextAsString();
+                        m_Materials[ i ].texture = token.GetNextAsString();
                         token.IsNextValid( "}" ); // テクスチャファイル名の終わり.
                         token.IsNextValid( "}" ); // マテリアルの終わり.
                     }
                 }
             }
-        }//endif "MeshMaterialList"
+        }
     }
 
     // 不要なメモリを解放.
@@ -466,6 +552,7 @@ bool ModelX::LoadFromFile( const char* filename )
     {
         for( size_t i=0; i<m_Meshes.size(); ++i )
         { m_Meshes[i].Optimize(); }
+
         m_Meshes   .shrink_to_fit();
         m_Materials.shrink_to_fit();
     }
@@ -486,6 +573,9 @@ bool ModelX::LoadFromFile( const char* filename )
     return true;
 }
 
+//-----------------------------------------------------------------------------------------
+//      マテリアルを設定します.
+//-----------------------------------------------------------------------------------------
 void ModelX::SetMaterial( const Material& material )
 {
     float ambient[4] = { 0.15f, 0.15f, 0.15f, 1.0f };
@@ -497,9 +587,12 @@ void ModelX::SetMaterial( const Material& material )
     glMaterialf ( GL_FRONT_AND_BACK, GL_SHININESS, material.power );
 }
 
+//-----------------------------------------------------------------------------------------
+//      メッシュを描画します.
+//-----------------------------------------------------------------------------------------
 void ModelX::DrawMesh( unsigned int index )
 {
-    /* 速度でない簡易実装 */
+    /* 簡易実装 */
 
     const MeshX& mesh = m_Meshes[ index ];
     bool hasM = ( !m_Materials.empty() );
@@ -542,20 +635,35 @@ void ModelX::DrawMesh( unsigned int index )
     }
 }
 
+//-----------------------------------------------------------------------------------------
+//      モデルを描画します.
+//-----------------------------------------------------------------------------------------
 void ModelX::Draw()
 {
     for( size_t i=0; i<m_Meshes.size(); ++i )
     { DrawMesh( i ); }
 }
 
+//-----------------------------------------------------------------------------------------
+//      メッシュを取得します.
+//-----------------------------------------------------------------------------------------
 std::vector<MeshX>& ModelX::GetMeshes()
 { return m_Meshes; }
 
+//-----------------------------------------------------------------------------------------
+//      マテリアルを取得します.
+//-----------------------------------------------------------------------------------------
 std::vector<Material>& ModelX::GetMaterials()
 { return m_Materials; }
 
+//-----------------------------------------------------------------------------------------
+//      バウンディングボックスを取得します.
+//-----------------------------------------------------------------------------------------
 BoundingBox ModelX::GetBox() const
 { return m_Box; }
 
+//-----------------------------------------------------------------------------------------
+//      バウンディングスフィアを取得します.
+//-----------------------------------------------------------------------------------------
 BoundingSphere ModelX::GetSphere() const
 { return m_Sphere; }
