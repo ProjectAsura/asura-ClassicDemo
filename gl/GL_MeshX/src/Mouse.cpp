@@ -1,4 +1,4 @@
-//-------------------------------------------------------------------------------------------
+ï»¿//-------------------------------------------------------------------------------------------
 // File : Mouse.h
 // Desc : Mouse Module.
 // Copyright(c) Project Asura. All right reserved.
@@ -34,7 +34,7 @@ template<class T> static inline T ToRad(T deg) { return (T)( (deg)*( PI / 180.0 
 
 
 //-------------------------------------------------------------------------------------------
-//      ‰~”Õ‚ğ•`‰æ‚µ‚Ü‚·.
+//      å††ç›¤ã‚’æç”»ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void DrawDisk()
 {
@@ -55,13 +55,13 @@ void DrawDisk()
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------
-//      ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 Camera::Camera()
 { Reset( 5.0f ); }
 
 //-------------------------------------------------------------------------------------------
-//      ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 Camera::Camera( const Camera& value )
 : m_Right   ( value.m_Right )
@@ -76,20 +76,20 @@ Camera::Camera( const Camera& value )
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------
-//      ƒfƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 Camera::~Camera()
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒEƒXƒhƒ‰ƒbƒO‚Ìˆ—‚Å‚·.
+//      ãƒã‚¦ã‚¹ãƒ‰ãƒ©ãƒƒã‚°æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void Camera::MouseMotion( int x, int y ) 
 {
-    //@¶ƒ{ƒ^ƒ“‚Ìˆ—
+    //ã€€å·¦ãƒœã‚¿ãƒ³ã®å‡¦ç†
     if ( m_Left.state == Push )
     {
-        //@ˆÚ“®—Ê‚ğŒvZ
+        //ã€€ç§»å‹•é‡ã‚’è¨ˆç®—
         m_Left.current.x = ( float(x) - m_Left.before.x ) + m_Left.after.x;
         m_Left.current.y = ( float(y) - m_Left.before.y ) + m_Left.after.y;
 
@@ -102,17 +102,17 @@ void Camera::MouseMotion( int x, int y )
         m_Angle.y = ToRad( m_Left.current.y );
     }
 
-    //@‰Eƒ{ƒ^ƒ“‚Ìˆ—
+    //ã€€å³ãƒœã‚¿ãƒ³ã®å‡¦ç†
     if ( m_Right.state == Push )
     {
         m_Right.current.x  = (  float(x) - m_Right.before.x ) + m_Right.after.x;
         m_Right.current.y  = ( -float(y) - m_Right.before.y ) + m_Right.after.y;
     }
 
-    //@’†ƒ{ƒ^ƒ“‚Ìˆ—
+    //ã€€ä¸­ãƒœã‚¿ãƒ³ã®å‡¦ç†
     if ( m_Middle.state == Push )
     {
-        //@ˆÚ“®—Ê‚ğŒvZ
+        //ã€€ç§»å‹•é‡ã‚’è¨ˆç®—
         m_Middle.current.x = ( float(x) - m_Middle.before.x ) + m_Middle.after.x;
         m_Middle.current.y = ( float(y) - m_Middle.before.y ) + m_Middle.after.y;
         m_Move.x =  m_Middle.current.x * 0.005f;
@@ -121,13 +121,13 @@ void Camera::MouseMotion( int x, int y )
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒEƒXƒ{ƒ^ƒ“‰Ÿ‰º‚Ìˆ—‚Å‚·.
+//      ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³æŠ¼ä¸‹æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void Camera::MouseInput( int button, int state, int x, int y ) 
 {
     switch( button )
     {
-        // ¶ƒ{ƒ^ƒ“
+        // å·¦ãƒœã‚¿ãƒ³
         case GLUT_LEFT_BUTTON :
             {
                 if( state == GLUT_DOWN )
@@ -145,7 +145,7 @@ void Camera::MouseInput( int button, int state, int x, int y )
             }
             break;
 
-        // ‰Eƒ{ƒ^ƒ“
+        // å³ãƒœã‚¿ãƒ³
         case GLUT_RIGHT_BUTTON :
             {
                 if( state == GLUT_DOWN ) 
@@ -163,7 +163,7 @@ void Camera::MouseInput( int button, int state, int x, int y )
             }
             break;
 
-        // ’†ƒ{ƒ^ƒ“
+        // ä¸­ãƒœã‚¿ãƒ³
         case GLUT_MIDDLE_BUTTON :
                 {
                 if ( state == GLUT_DOWN )
@@ -185,7 +185,7 @@ void Camera::MouseInput( int button, int state, int x, int y )
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒpƒ‰ƒ[ƒ^‚ğƒŠƒZƒbƒg‚µ‚Ü‚·.
+//      ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void Camera::Reset( float distance )
 {
@@ -195,11 +195,11 @@ void Camera::Reset( float distance )
     m_Right .Reset();
     m_Middle.Reset();
 
-    m_Angle.x = ToRad(  45.0f ); //  45“x.
-    m_Angle.y = ToRad( 315.0f ); // -45“x.
+    m_Angle.x = ToRad(  45.0f ); //  45åº¦.
+    m_Angle.y = ToRad( 315.0f ); // -45åº¦.
 
-    m_Left.after.x =  45.0f; //  45“x.
-    m_Left.after.y = 315.0f; // -45“x.
+    m_Left.after.x =  45.0f; //  45åº¦.
+    m_Left.after.y = 315.0f; // -45åº¦.
 
     m_Position  = Vec3( 0.0f, 0.0f, 0.0f );
     m_Target    = Vec3( 0.0f, 0.0f, 0.0f );
@@ -208,14 +208,14 @@ void Camera::Reset( float distance )
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒrƒ…[s—ñ‚ÌXVˆ—‚ğs‚¢‚Ü‚·.
+//      ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã®æ›´æ–°å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void Camera::Update()
 {
     float dist = m_Distance;
     dist += ( m_Right.current.y * 0.5f );
 
-    // ‚Ô‚Á”ò‚Î‚È‚¢‚æ‚¤‚É§ŒÀ.
+    // ã¶ã£é£›ã°ãªã„ã‚ˆã†ã«åˆ¶é™.
     if ( dist < FLT_EPSILON )
     { dist = FLT_EPSILON; }
 
@@ -225,23 +225,23 @@ void Camera::Update()
     float sinV = sinf( m_Angle.y );
     float cosV = cosf( m_Angle.y );
 
-    //@‹“_ˆÊ’u‚ğZo.
+    //ã€€è¦–ç‚¹ä½ç½®ã‚’ç®—å‡º.
     m_Position.x = m_Move.x + dist * ( -cosV * sinH );
     m_Position.y = m_Move.y + dist * ( -sinV );
     m_Position.z = m_Move.z + dist * ( -cosV * cosH );
 
 
-    // ’‹“_ˆÊ’u‚ğZo.
+    // æ³¨è¦–ç‚¹ä½ç½®ã‚’ç®—å‡º.
     m_Target.x = m_Move.x;
     m_Target.y = m_Move.y;
     m_Target.z = m_Move.z;
 
-    // ãŒü‚«ƒxƒNƒgƒ‹‚ğZo.
+    // ä¸Šå‘ããƒ™ã‚¯ãƒˆãƒ«ã‚’ç®—å‡º.
     m_Upward.x = ( -sinV * sinH );
     m_Upward.y = ( cosV );
     m_Upward.z = ( -sinV * cosH );
 
-    //@‹“_ˆÊ’u‚Ìİ’è
+    //ã€€è¦–ç‚¹ä½ç½®ã®è¨­å®š
     gluLookAt(
         m_Position.x, m_Position.y, m_Position.z,
         m_Target.x,   m_Target.y,   m_Target.z,
@@ -250,22 +250,22 @@ void Camera::Update()
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒMƒYƒ‚‚ğ•`‰æ‚µ‚Ü‚·.
+//      ã‚®ã‚ºãƒ¢ã‚’æç”»ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void Camera::DrawGizmo(int w, int h)
 {
     const float dist = 15.0f;
     Vec3 eye;
 
-    //@ƒEƒBƒ“ƒhƒE‘S‘Ì‚ğƒrƒ…[ƒ|[ƒg‚É‚·‚é
+    //ã€€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å…¨ä½“ã‚’ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã«ã™ã‚‹
     glViewport( w - 100, h - 100, 100, 100 );
 
-    //@“§‹•ÏŠ·s—ñ‚Ìİ’è
+    //ã€€é€è¦–å¤‰æ›è¡Œåˆ—ã®è¨­å®š
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(30.0, 1, 1, 100000.0);
 
-    //@ƒ‚ƒfƒ‹ƒrƒ…[•ÏŠ·‚Ìİ’è
+    //ã€€ãƒ¢ãƒ‡ãƒ«ãƒ“ãƒ¥ãƒ¼å¤‰æ›ã®è¨­å®š
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -275,23 +275,23 @@ void Camera::DrawGizmo(int w, int h)
     float sinV = sinf( m_Angle.y );
     float cosV = cosf( m_Angle.y );
 
-    //@‹“_ˆÊ’u‚Ìİ’è
+    //ã€€è¦–ç‚¹ä½ç½®ã®è¨­å®š
     eye.x = dist * ( -cosV * sinH );
     eye.y = dist * ( -sinV );
     eye.z = dist * ( -cosV * cosH );
 
-    // ƒrƒ…[s—ñ‚ğŒvZ.
+    // ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã‚’è¨ˆç®—.
     gluLookAt( 
         eye.x,      eye.y,      eye.z,
         0.0,        0.0,        0.0,
         m_Upward.x, m_Upward.y, m_Upward.z );
 
-    //@ƒ‰ƒCƒeƒBƒ“ƒO–³Œø
+    //ã€€ãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°ç„¡åŠ¹
     GLboolean isLighting;
     glGetBooleanv( GL_LIGHTING, &isLighting );
     glDisable( GL_LIGHTING );
 
-    //@²‚Ì•¶š
+    //ã€€è»¸ã®æ–‡å­—
     glPushMatrix();
     {
         glColor4fv( AXIS_COLOR_BLACK ); 
@@ -304,11 +304,11 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@ƒ‰ƒCƒeƒBƒ“ƒO—LŒø
+    //ã€€ãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°æœ‰åŠ¹
     if ( isLighting )
     { glEnable(GL_LIGHTING); }
 
-    //@x²³
+    //ã€€xè»¸æ­£
     glPushMatrix();
     {
         glColor4fv( AXIS_COLOR_RED );
@@ -322,7 +322,7 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@y²³
+    //ã€€yè»¸æ­£
     glPushMatrix();
     {
         glColor4fv( AXIS_COLOR_GREEN );
@@ -336,7 +336,7 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@z²³
+    //ã€€zè»¸æ­£
     glPushMatrix();
     {
         glColor4fv( AXIS_COLOR_BLUE );
@@ -350,7 +350,7 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@ƒLƒ…[ƒu
+    //ã€€ã‚­ãƒ¥ãƒ¼ãƒ–
     glPushMatrix();
     {
         glColor4fv( AXIS_COLOR_CYAN );
@@ -361,7 +361,7 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@x²•‰
+    //ã€€xè»¸è² 
     glPushMatrix();
     {
         glTranslated( -1.75, 0.0, 0.0 );
@@ -371,7 +371,7 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@y²•‰
+    //ã€€yè»¸è² 
     glPushMatrix();
     {
         glTranslated( 0.0, -1.75, 0.0 );
@@ -381,7 +381,7 @@ void Camera::DrawGizmo(int w, int h)
     }
     glPopMatrix();
 
-    //@z²•‰
+    //ã€€zè»¸è² 
     glPushMatrix();
     {
         glTranslated( 0.0, 0.0, -1.75 );
@@ -393,7 +393,7 @@ void Camera::DrawGizmo(int w, int h)
 }
 
 //-------------------------------------------------------------------------------------------
-//      ‘ã“ü‰‰Zq‚Å‚·.
+//      ä»£å…¥æ¼”ç®—å­ã§ã™.
 //-------------------------------------------------------------------------------------------
 Camera& Camera::operator = ( const Camera& value )
 {

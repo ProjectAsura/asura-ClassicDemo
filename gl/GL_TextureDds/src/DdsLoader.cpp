@@ -1,4 +1,4 @@
-//-------------------------------------------------------------------------------------------
+ï»¿//-------------------------------------------------------------------------------------------
 // File : TgaLoader.cpp
 // Desc : Targa Texture Loader.
 // Copyright(c) Project Asura. All right reserved.
@@ -30,40 +30,40 @@ namespace /* anonymous */ {
 //------------------------------------------------------------------------------------------
 
 // dwFlags Value
-static const unsigned int DDSD_CAPS         = 0x00000001;   // dwCaps/dwCaps2‚ª—LŒø.
-static const unsigned int DDSD_HEIGHT       = 0x00000002;   // dwHeight‚ª—LŒø.
-static const unsigned int DDSD_WIDTH        = 0x00000004;   // dwWidth‚ª—LŒø.
-static const unsigned int DDSD_PITCH        = 0x00000008;   // dwPitchOrLinearSize‚ªPitch‚ğ•\‚·.
-static const unsigned int DDSD_PIXELFORMAT  = 0x00001000;   // dwPfSize/dwPfFlags/dwRGB`“™‚Ì’¼Ú’è‹`‚ª—LŒø.
-static const unsigned int DDSD_MIPMAPCOUNT  = 0x00020000;   // dwMipMapCount‚ª—LŒø.
-static const unsigned int DDSD_LINEARSIZE   = 0x00080000;   // dwPitchOrLinearSize‚ªLinerSize‚ğ•\‚·.
-static const unsigned int DDSD_DEPTH        = 0x00800000;   // dwDepth‚ª—LŒø.
+static const unsigned int DDSD_CAPS         = 0x00000001;   // dwCaps/dwCaps2ãŒæœ‰åŠ¹.
+static const unsigned int DDSD_HEIGHT       = 0x00000002;   // dwHeightãŒæœ‰åŠ¹.
+static const unsigned int DDSD_WIDTH        = 0x00000004;   // dwWidthãŒæœ‰åŠ¹.
+static const unsigned int DDSD_PITCH        = 0x00000008;   // dwPitchOrLinearSizeãŒPitchã‚’è¡¨ã™.
+static const unsigned int DDSD_PIXELFORMAT  = 0x00001000;   // dwPfSize/dwPfFlags/dwRGBï½ç­‰ã®ç›´æ¥å®šç¾©ãŒæœ‰åŠ¹.
+static const unsigned int DDSD_MIPMAPCOUNT  = 0x00020000;   // dwMipMapCountãŒæœ‰åŠ¹.
+static const unsigned int DDSD_LINEARSIZE   = 0x00080000;   // dwPitchOrLinearSizeãŒLinerSizeã‚’è¡¨ã™.
+static const unsigned int DDSD_DEPTH        = 0x00800000;   // dwDepthãŒæœ‰åŠ¹.
 
 // dwPfFlags Value
-static const unsigned int DDPF_ALPHAPIXELS      = 0x00000001;   // RGBˆÈŠO‚Éalpha‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é.
-static const unsigned int DDPF_ALPHA            = 0x00000002;   // pixel‚ÍAlpha¬•ª‚Ì‚İ.
-static const unsigned int DDPF_FOURCC           = 0x00000004;   // dwFourCC‚ª—LŒø.
+static const unsigned int DDPF_ALPHAPIXELS      = 0x00000001;   // RGBä»¥å¤–ã«alphaãŒå«ã¾ã‚Œã¦ã„ã‚‹.
+static const unsigned int DDPF_ALPHA            = 0x00000002;   // pixelã¯Alphaæˆåˆ†ã®ã¿.
+static const unsigned int DDPF_FOURCC           = 0x00000004;   // dwFourCCãŒæœ‰åŠ¹.
 static const unsigned int DDPF_PALETTE_INDEXED4 = 0x00000008;   // Palette 16 colors.
 static const unsigned int DDPF_PALETTE_INDEXED8 = 0x00000020;   // Palette 256 colors.
-static const unsigned int DDPF_RGB              = 0x00000040;   // dwRGBBitCount/dwRBitMask/dwGBitMask/dwBBitMask/dwRGBAlphaBitMask‚É‚æ‚Á‚ÄƒtƒH[ƒ}ƒbƒg‚ª’è‹`‚³‚ê‚Ä‚¢‚é‚±‚Æ‚ğ¦‚·.
-static const unsigned int DDPF_LUMINANCE        = 0x00020000;   // 1ch‚Ìƒf[ƒ^‚ªRGB‘S‚Ä‚É“WŠJ‚³‚ê‚é.
-static const unsigned int DDPF_BUMPDUDV         = 0x00080000;   // pixel‚ª•„†•t‚«‚Å‚ ‚é‚±‚Æ‚ğ¦‚·.
+static const unsigned int DDPF_RGB              = 0x00000040;   // dwRGBBitCount/dwRBitMask/dwGBitMask/dwBBitMask/dwRGBAlphaBitMaskã«ã‚ˆã£ã¦ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆãŒå®šç¾©ã•ã‚Œã¦ã„ã‚‹ã“ã¨ã‚’ç¤ºã™.
+static const unsigned int DDPF_LUMINANCE        = 0x00020000;   // 1chã®ãƒ‡ãƒ¼ã‚¿ãŒRGBå…¨ã¦ã«å±•é–‹ã•ã‚Œã‚‹.
+static const unsigned int DDPF_BUMPDUDV         = 0x00080000;   // pixelãŒç¬¦å·ä»˜ãã§ã‚ã‚‹ã“ã¨ã‚’ç¤ºã™.
 
 // dwCaps Value
-static const unsigned int DDSCAPS_ALPHA     = 0x00000002;       // Alpha‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éê‡.
-static const unsigned int DDSCAPS_COMPLEX   = 0x00000008;       // •¡”‚Ìƒf[ƒ^‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éê‡Palette/Mipmap/Cube/Volume“™.
-static const unsigned int DDSCAPS_TEXTURE   = 0x00001000;       // í‚É1.
-static const unsigned int DDSCAPS_MIPMAP    = 0x00400000;       // MipMap‚ª‘¶İ‚·‚éê‡.
+static const unsigned int DDSCAPS_ALPHA     = 0x00000002;       // AlphaãŒå«ã¾ã‚Œã¦ã„ã‚‹å ´åˆ.
+static const unsigned int DDSCAPS_COMPLEX   = 0x00000008;       // è¤‡æ•°ã®ãƒ‡ãƒ¼ã‚¿ãŒå«ã¾ã‚Œã¦ã„ã‚‹å ´åˆPalette/Mipmap/Cube/Volumeç­‰.
+static const unsigned int DDSCAPS_TEXTURE   = 0x00001000;       // å¸¸ã«1.
+static const unsigned int DDSCAPS_MIPMAP    = 0x00400000;       // MipMapãŒå­˜åœ¨ã™ã‚‹å ´åˆ.
 
 // dwCaps2 Value
-static const unsigned int DDSCAPS2_CUBEMAP              = 0x00000200;   // CubeMap‚ª‘¶İ‚·‚éê‡.
+static const unsigned int DDSCAPS2_CUBEMAP              = 0x00000200;   // CubeMapãŒå­˜åœ¨ã™ã‚‹å ´åˆ.
 static const unsigned int DDSCAPS2_CUBEMAP_POSITIVE_X   = 0x00000400;   // CubeMap X+
 static const unsigned int DDSCAPS2_CUBEMAP_NEGATIVE_X   = 0x00000800;   // CubeMap X-
 static const unsigned int DDSCAPS2_CUBEMAP_POSITIVE_Y   = 0x00001000;   // CubeMap Y+
 static const unsigned int DDSCAPS2_CUBEMAP_NEGATIVE_Y   = 0x00002000;   // CubeMap Y-
 static const unsigned int DDSCAPS2_CUBEMAP_POSITIVE_Z   = 0x00004000;   // CubeMap Z+
 static const unsigned int DDSCAPS2_CUBEMAP_NEGATIVE_Z   = 0x00008000;   // CubeMap Z-
-static const unsigned int DDSCAPS2_VOLUME               = 0x00400000;   // VolumeTexture‚Ìê‡.
+static const unsigned int DDSCAPS2_VOLUME               = 0x00400000;   // VolumeTextureã®å ´åˆ.
 
 // dwFourCC Value
 static const unsigned int FOURCC_DXT1           = '1TXD';           // DXT1
@@ -149,7 +149,7 @@ typedef struct __DDSurfaceDesc
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒXƒN‚ğƒ`ƒFƒbƒN‚µ‚Ü‚·.
+//      ãƒã‚¹ã‚¯ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool CheckMask
 (
@@ -178,7 +178,7 @@ bool CheckMask
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------
-//      ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 DdsImage::DdsImage()
 : m_ImageSize       ( 0 )
@@ -194,13 +194,13 @@ DdsImage::DdsImage()
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒfƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 DdsImage::~DdsImage()
 { Release(); }
 
 //-------------------------------------------------------------------------------------------
-//      ‰ğ•úˆ—‚ğs‚¢‚Ü‚·.
+//      è§£æ”¾å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void DdsImage::Release()
 {
@@ -220,13 +220,13 @@ void DdsImage::Release()
 }
 
 //-------------------------------------------------------------------------------------------
-//      “Ç‚İ‚İˆ—‚ğs‚¢‚Ü‚·.
+//      èª­ã¿è¾¼ã¿å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool DdsImage::Load(const char *filename)
 {
     FILE *fp;
 
-    //@ƒtƒ@ƒCƒ‹‚ğŠJ‚­
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
     errno_t err = fopen_s(&fp,filename, "rb");
     if ( err != 0 )
     {
@@ -234,7 +234,7 @@ bool DdsImage::Load(const char *filename)
         return false;
     }
 
-    // ƒtƒ@ƒCƒ‹ƒ}ƒWƒbƒN‚ğƒ`ƒFƒbƒN.
+    // ãƒ•ã‚¡ã‚¤ãƒ«ãƒã‚¸ãƒƒã‚¯ã‚’ãƒã‚§ãƒƒã‚¯.
     char magic[4];
     fread( &magic, sizeof(char), 4, fp );
     if ( ( magic[0] != 'D' )
@@ -249,10 +249,10 @@ bool DdsImage::Load(const char *filename)
 
     DDSurfaceDesc ddsd;
 
-    //@ƒwƒbƒ_[‚ğ“Ç‚İæ‚è
+    //ã€€ãƒ˜ãƒƒãƒ€ãƒ¼ã‚’èª­ã¿å–ã‚Š
     fread( &ddsd, sizeof(ddsd), 1, fp );
 
-    //@•E‚‚³‚ğŠi”[
+    //ã€€å¹…ãƒ»é«˜ã•ã‚’æ ¼ç´
     m_Height      = ddsd.height;
     m_Width       = ddsd.width;
     m_MipmapCount = 1;
@@ -260,7 +260,7 @@ bool DdsImage::Load(const char *filename)
     if ( ddsd.flags & DDSD_MIPMAPCOUNT )
     { m_MipmapCount = ddsd.mipMapLevels; }
 
-    // ƒLƒ…[ƒuƒ}ƒbƒv‚Æƒ{ƒŠƒ…[ƒ€ƒeƒNƒXƒ`ƒƒ‚Ì”»’è‚ğˆê‰s‚Á‚ÄŠY“–‚·‚éê‡‚Í’e‚­.
+    // ã‚­ãƒ¥ãƒ¼ãƒ–ãƒãƒƒãƒ—ã¨ãƒœãƒªãƒ¥ãƒ¼ãƒ ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®åˆ¤å®šã‚’ä¸€å¿œè¡Œã£ã¦è©²å½“ã™ã‚‹å ´åˆã¯å¼¾ã.
     if ( ddsd.caps & DDSCAPS_COMPLEX )
     {
         if ( ddsd.caps2 & DDSCAPS2_CUBEMAP )
@@ -279,12 +279,12 @@ bool DdsImage::Load(const char *filename)
 
     bool isFind = false;
 
-    // BCˆ³k‚Ìƒ^ƒCƒv‚ğ’²‚×‚é.
+    // BCåœ§ç¸®ã®ã‚¿ã‚¤ãƒ—ã‚’èª¿ã¹ã‚‹.
     if ( ddsd.flags & DDSD_PIXELFORMAT )
     {
         if ( ddsd.format.flags & DDPF_FOURCC )
         {
-            //@ƒtƒH[ƒ}ƒbƒg”»•Ê
+            //ã€€ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆåˆ¤åˆ¥
             switch ( ddsd.format.fourCC )
             {
                 case FOURCC_DXT1:
@@ -514,7 +514,7 @@ bool DdsImage::Load(const char *filename)
     }
         
 
-    // BCˆ³kˆÈŠO‚Í”ñƒTƒ|[ƒg‚Ì‚½‚ßƒGƒ‰[ˆµ‚¢.
+    // BCåœ§ç¸®ä»¥å¤–ã¯éã‚µãƒãƒ¼ãƒˆã®ãŸã‚ã‚¨ãƒ©ãƒ¼æ‰±ã„.
     if ( !isFind )
     {
         ELOG( "Error : Unsupported format" );
@@ -527,10 +527,10 @@ bool DdsImage::Load(const char *filename)
     long end = ftell(fp);
     fseek( fp, curr, SEEK_SET );
 
-    //@ƒeƒNƒZƒ‹ƒf[ƒ^‚ÌƒTƒCƒY‚ğZo
+    //ã€€ãƒ†ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ã®ã‚µã‚¤ã‚ºã‚’ç®—å‡º
     m_ImageSize = unsigned int( end - curr );
 
-    // ƒƒ‚ƒŠ‚ğŠm•Û.
+    // ãƒ¡ãƒ¢ãƒªã‚’ç¢ºä¿.
     m_pImageData = new(std::nothrow) unsigned char [ m_ImageSize ];
     if ( m_pImageData == nullptr )
     {
@@ -539,18 +539,18 @@ bool DdsImage::Load(const char *filename)
         return false;
     }
 
-    //@ƒsƒNƒZƒ‹ƒf[ƒ^‚Ì“Ç‚İ‚İ
+    //ã€€ãƒ”ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ã®èª­ã¿è¾¼ã¿
     fread( m_pImageData, sizeof(unsigned char), m_ImageSize, fp );
 
-    //@ƒtƒ@ƒCƒ‹‚ğ•Â‚¶‚é
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‰ã˜ã‚‹
     fclose( fp );
 
-    // ³íI—¹.
+    // æ­£å¸¸çµ‚äº†.
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒ‚ğ¶¬‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool DdsImage::CreateGLTexture()
 {
@@ -559,33 +559,33 @@ bool DdsImage::CreateGLTexture()
 
     glEnable( GL_TEXTURE_2D );
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğ¶¬
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆ
     glGenTextures(1, &m_ID);
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğƒoƒCƒ“ƒh‚·‚é
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
     glBindTexture( GL_TEXTURE_2D, m_ID );
 
-    //@Šg‘åEk¬‚·‚é•û–@‚Ìw’è
+    //ã€€æ‹¡å¤§ãƒ»ç¸®å°ã™ã‚‹æ–¹æ³•ã®æŒ‡å®š
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
-    //@ƒeƒNƒXƒ`ƒƒŠÂ‹«‚Ìİ’è
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ç’°å¢ƒã®è¨­å®š
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 
-    //@‰ğ“€ì‹Æ
+    //ã€€è§£å‡ä½œæ¥­
     DecompressBC();
 
-    // ƒAƒ“ƒoƒCƒ“ƒh‚µ‚Ä‚¨‚­.
+    // ã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰ã—ã¦ãŠã.
     glBindTexture( GL_TEXTURE_2D, 0 );
 
     glDisable( GL_TEXTURE_2D );
 
-    // ³íI—¹.
+    // æ­£å¸¸çµ‚äº†.
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒuƒƒbƒNˆ³k‚ğ‰ğ“€‚µ‚Ü‚·.
+//      ãƒ–ãƒ­ãƒƒã‚¯åœ§ç¸®ã‚’è§£å‡ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void DdsImage::DecompressBC()
 {
@@ -596,16 +596,16 @@ void DdsImage::DecompressBC()
     int w = m_Width;
     int h = m_Height;
 
-    //@BC1, BC4‚Ìê‡.
+    //ã€€BC1, BC4ã®å ´åˆ.
     if ( ( m_Format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT )
       || ( m_Format == GL_COMPRESSED_SIGNED_RED_RGTC1_EXT )
       || ( m_Format == GL_COMPRESSED_RED_RGTC1_EXT ) )
     { blockSize = 8; }
-    //@BC2, BC3, BC5, BC6H, BC7‚Ìê‡.
+    //ã€€BC2, BC3, BC5, BC6H, BC7ã®å ´åˆ.
     else
     { blockSize = 16; }
 
-    //@‰ğ“€
+    //ã€€è§£å‡
     for ( unsigned int i=0; i<m_MipmapCount; i++ )
     {
         size = ( ( w + 3 ) / 4 ) * ( ( h + 3 ) / 4 ) * blockSize;
@@ -622,7 +622,7 @@ void DdsImage::DecompressBC()
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒ‚ğ”jŠü‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç ´æ£„ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void DdsImage::DeleteGLTexture()
 {
@@ -634,7 +634,7 @@ void DdsImage::DeleteGLTexture()
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒID‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 unsigned int DdsImage::GetID() const
 { return m_ID; }

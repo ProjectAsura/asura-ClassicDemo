@@ -1,4 +1,4 @@
-#ifndef  __FREEGLUT_STD_H__
+﻿#ifndef  __FREEGLUT_STD_H__
 #define  __FREEGLUT_STD_H__
 
 /*

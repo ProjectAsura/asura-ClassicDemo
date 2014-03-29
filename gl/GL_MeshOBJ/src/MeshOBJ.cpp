@@ -1,4 +1,4 @@
-//-------------------------------------------------------------------------------------------
+ï»¿//-------------------------------------------------------------------------------------------
 // File : MeshOBJ.cpp
 // Desc : Wavefront Object File Module.
 // Copyright(c) Project Asura. All right reserved.
@@ -27,7 +27,7 @@
 namespace /* anonymous */ {
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒeƒŠƒAƒ‹‚Ì‰Šú‰»‚ğs‚¢‚Ü‚·.
+//      ãƒãƒ†ãƒªã‚¢ãƒ«ã®åˆæœŸåŒ–ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void InitMaterial( Material& material )
 {
@@ -40,7 +40,7 @@ void InitMaterial( Material& material )
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒeƒŠƒAƒ‹‚ğİ’è‚µ‚Ü‚·.
+//      ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’è¨­å®šã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void SetMaterial( const Material& material )
 {
@@ -63,7 +63,7 @@ void SetMaterial( const Material& material )
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------
-//      ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 MeshOBJ::MeshOBJ()
 : m_Vertices    ()
@@ -76,14 +76,14 @@ MeshOBJ::MeshOBJ()
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒfƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 MeshOBJ::~MeshOBJ()
 { Release(); }
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒƒ‚ƒŠ‚ğ‰ğ•ú‚µ‚Ü‚·.
+//      ãƒ¡ãƒ¢ãƒªã‚’è§£æ”¾ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void MeshOBJ::Release()
 {
@@ -94,7 +94,7 @@ void MeshOBJ::Release()
 }
 
 //-------------------------------------------------------------------------------------------
-//      OBJƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚İˆ—‚ğs‚¢‚Ü‚·.
+//      OBJãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã¿å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool MeshOBJ::LoadOBJFile( const char *filename )
 {
@@ -114,7 +114,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
     unsigned int faceIndex = 0;
     unsigned int faceCount = 0;
 
-    // ƒfƒBƒŒƒNƒgƒŠ–¼‚ğæ‚èo‚·.
+    // ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªåã‚’å–ã‚Šå‡ºã™.
     {
         std::string directoryPath;
         std::string tfile( filename );
@@ -125,10 +125,10 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         { m_DirectoryPath = tfile.substr( 0, idx + 1 ); }
     }
 
-    // ƒtƒ@ƒCƒ‹‚ğŠJ‚­
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
     file.open( filename, std::ios::in );
 
-    //@ƒ`ƒFƒbƒN
+    //ã€€ãƒã‚§ãƒƒã‚¯
     if ( !file.is_open() )
     {
         std::cerr << "Error : File Open Failed.\n";
@@ -136,36 +136,36 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         return false;
     }
 
-    // ƒ‹[ƒv
+    // ãƒ«ãƒ¼ãƒ—
     for( ;; )
     {
         file >> buf;
         if ( !file || file.eof() )
         { break; }
 
-        //@ƒRƒƒ“ƒg
+        //ã€€ã‚³ãƒ¡ãƒ³ãƒˆ
         if ( 0 == strcmp( buf, "#" ) )
         { continue; }
 
-        //@’¸“_À•W
+        //ã€€é ‚ç‚¹åº§æ¨™
         else if ( 0 == strcmp( buf, "v" ) )
         {
             Vec3 v;
             file >> v.x >> v.y >> v.z;
             positions.push_back( v );
 
-            //@ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚Ì‰Šú‰»
+            //ã€€ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã®åˆæœŸåŒ–
             if ( !initBox )
             {
                 m_Box = BoundingBox( v );
                 initBox = true;
             }
 
-            //@ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ÌZo
+            //ã€€ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã®ç®—å‡º
             m_Box.Merge( v );
         }
 
-        //@ƒeƒNƒXƒ`ƒƒÀ•W
+        //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™
         else if ( 0 == strcmp( buf, "vt" ) )
         {
             Vec2 uv;
@@ -173,7 +173,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
             texcoords.push_back( uv );
         }
 
-        //@–@üƒxƒNƒgƒ‹
+        //ã€€æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«
         else if ( 0 == strcmp( buf, "vn" ) )
         {
             Vec3 n;
@@ -181,7 +181,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
             normals.push_back( n );
         }
 
-        //@–Ê
+        //ã€€é¢
         else if ( 0 == strcmp( buf, "f" ) )
         {
             unsigned int iPosition = 0;
@@ -197,10 +197,10 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
             faceIndex++;
             faceCount++;
 
-            //@OŠpŒ`ElŠpŒ`‚Ì‚İ‘Î‰
+            //ã€€ä¸‰è§’å½¢ãƒ»å››è§’å½¢ã®ã¿å¯¾å¿œ
             for ( int iFace = 0; iFace < 4; iFace++ )
             {
-                count++;    //@’¸“_”‚ğ”‚¦‚é
+                count++;    //ã€€é ‚ç‚¹æ•°ã‚’æ•°ãˆã‚‹
                 memset( &vertex, 0, sizeof( vertex ) );
 
                 file >> iPosition;
@@ -211,7 +211,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
                 {
                     file.ignore();
 
-                    //@ƒeƒNƒXƒ`ƒƒÀ•WƒCƒ“ƒfƒbƒNƒX
+                    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
                     if ( '/' != file.peek() )
                     {
                         file >> iTexCoord;
@@ -219,7 +219,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
                         t[iFace] = iTexCoord -1;
                     }
 
-                    //@–@üƒxƒNƒgƒ‹ƒCƒ“ƒfƒbƒNƒX
+                    //ã€€æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
                     if ( '/' == file.peek() )
                     {
                         file.ignore();
@@ -230,7 +230,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
                     }
                 }
 
-                //@ƒJƒEƒ“ƒg‚ª3–¢–
+                //ã€€ã‚«ã‚¦ãƒ³ãƒˆãŒ3æœªæº€
                 if ( iFace < 3 )
                 {
                     index = m_Vertices.size();
@@ -238,7 +238,7 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
                     m_Indices .push_back( index );
                 }
 
-                //@Ÿ‚ª‰üs‚¾‚Á‚½‚çI—¹
+                //ã€€æ¬¡ãŒæ”¹è¡Œã ã£ãŸã‚‰çµ‚äº†
                 if ( '\n' == file.peek() )
                 {
                     break;
@@ -246,14 +246,14 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
 
             }
 
-            //@lŠpŒ`ƒ|ƒŠƒSƒ“‚Ìê‡COŠpŒ`‚ğ’Ç‰Á‚·‚é
+            //ã€€å››è§’å½¢ãƒãƒªã‚´ãƒ³ã®å ´åˆï¼Œä¸‰è§’å½¢ã‚’è¿½åŠ ã™ã‚‹
             if ( count > 3 )
             {
-                //@ƒJƒEƒ“ƒg
+                //ã€€ã‚«ã‚¦ãƒ³ãƒˆ
                 faceIndex++;
                 faceCount++;
 
-                //@’¸“_‚ÆƒCƒ“ƒfƒbƒNƒX‚ğ’Ç‰Á
+                //ã€€é ‚ç‚¹ã¨ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’è¿½åŠ 
                 for ( int idx = 1; idx < 4; idx++ )
                 {
                     int j = ( idx + 1 ) % 4;
@@ -271,23 +271,23 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
             }
         }
 
-        //@ƒ}ƒeƒŠƒAƒ‹ƒtƒ@ƒCƒ‹
+        //ã€€ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«
         else if ( 0 == strcmp( buf, "mtllib" ) )
         {
             file >> materialFile;
 
-            //@ƒ}ƒeƒŠƒAƒ‹ƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ
+            //ã€€ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
             if ( !materialFile.empty() )
             {
                 if ( !LoadMTLFile( ( m_DirectoryPath + materialFile ).c_str() ) )
                 {
-                    std::cerr << "Error : ƒ}ƒeƒŠƒAƒ‹‚Ìƒ[ƒh‚É¸”s\n";
+                    std::cerr << "Error : ãƒãƒ†ãƒªã‚¢ãƒ«ã®ãƒ­ãƒ¼ãƒ‰ã«å¤±æ•—\n";
                     return false;
                 }
             }
         }
 
-        //@ƒ}ƒeƒŠƒAƒ‹
+        //ã€€ãƒãƒ†ãƒªã‚¢ãƒ«
         else if ( 0 == strcmp( buf, "usemtl" ) )
         {
             std::string name;
@@ -313,37 +313,37 @@ bool MeshOBJ::LoadOBJFile( const char *filename )
         file.ignore( BUFFER_LENGTH, '\n' );
     }
 
-    //@ƒTƒuƒZƒbƒg
+    //ã€€ã‚µãƒ–ã‚»ãƒƒãƒˆ
     if ( m_Subsets.size() > 0 )
     {
         int maxSize = m_Subsets.size();
         m_Subsets[maxSize-1].count = faceCount * 3;
     }
 
-    // ƒtƒ@ƒCƒ‹‚ğ•Â‚¶‚é
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‰ã˜ã‚‹
     file.close();
 
-    // ƒƒ‚ƒŠ‚ğ‰ğ•ú.
+    // ãƒ¡ãƒ¢ãƒªã‚’è§£æ”¾.
     positions.clear();
     normals  .clear();
     texcoords.clear();
 
-    // Å“K‰»
+    // æœ€é©åŒ–
     {
         m_Vertices.shrink_to_fit();
         m_Subsets .shrink_to_fit();
         m_Indices .shrink_to_fit();
     }
 
-    //@ƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚Ìì¬
+    //ã€€ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã®ä½œæˆ
     m_Sphere = BoundingSphere( m_Box );
 
-    //@³íI—¹
+    //ã€€æ­£å¸¸çµ‚äº†
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      MTLƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚İˆ—‚ğs‚¢‚Ü‚·.
+//      MTLãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã¿å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool MeshOBJ::LoadMTLFile( const char* filename )
 {
@@ -355,10 +355,10 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
     std::ifstream file;
     std::string   name;
 
-    //@ƒtƒ@ƒCƒ‹‚ğŠJ‚­
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
     file.open( filename, std::ios::in );
 
-    //@ƒ`ƒFƒbƒN
+    //ã€€ãƒã‚§ãƒƒã‚¯
     if ( !file.is_open() )
     {
         std::cerr << "Error : File Open Failed\n";
@@ -366,7 +366,7 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
         return false;
     }
 
-    //@ƒ‹[ƒv
+    //ã€€ãƒ«ãƒ¼ãƒ—
     for( ;; )
     {
         file >> buf;
@@ -449,106 +449,106 @@ bool MeshOBJ::LoadMTLFile( const char* filename )
         file.ignore( BUFFER_LENGTH, '\n' );
     }
 
-    //@ƒtƒ@ƒCƒ‹‚ğ•Â‚¶‚é
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‰ã˜ã‚‹
     file.close();
 
-    //@³íI—¹
+    //ã€€æ­£å¸¸çµ‚äº†
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚İˆ—‚ğs‚¢‚Ü‚·.
+//      ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã¿å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool MeshOBJ::LoadFromFile( const char* filename )
 {
-    //@OBJ, MTLƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ
+    //ã€€OBJ, MTLãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã¿
     if ( !LoadOBJFile( filename ) )
     {
         std::cerr << "Error : Load File Failed.\n";
         return false;
     }
 
-    //@³íI—¹
+    //ã€€æ­£å¸¸çµ‚äº†
     return true;
 }
 
 
 //-------------------------------------------------------------------------------------------
-//      •`‰æˆ—‚ğs‚¢‚Ü‚·.
+//      æç”»å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void MeshOBJ::Draw()
 {
     for ( size_t i = 0; i<m_Subsets.size(); i++ )
     {
-        // ƒTƒuƒZƒbƒg‚ğæ“¾
+        // ã‚µãƒ–ã‚»ãƒƒãƒˆã‚’å–å¾—
         Subset& subset = m_Subsets[ i ];
 
-        // ƒ}ƒeƒŠƒAƒ‹
+        // ãƒãƒ†ãƒªã‚¢ãƒ«
         Material& material = m_Materials[ subset.materialName ];
         SetMaterial( material );
 
-        //@OŠpŒ`•`‰æ
+        //ã€€ä¸‰è§’å½¢æç”»
         glInterleavedArrays( GL_T2F_N3F_V3F, 0, &m_Vertices[0] );
         glDrawElements( GL_TRIANGLES, subset.count, GL_UNSIGNED_INT, &m_Indices[ subset.offset ] );
     }
 }
 
 //-------------------------------------------------------------------------------------------
-//      ’¸“_ƒoƒbƒtƒ@‚ğæ“¾‚µ‚Ü‚·.
+//      é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 MeshOBJ::VertexList& MeshOBJ::GetVertices()
 { return m_Vertices; }
 
 //-------------------------------------------------------------------------------------------
-//      ƒTƒuƒZƒbƒg‚ğæ“¾‚µ‚Ü‚·.
+//      ã‚µãƒ–ã‚»ãƒƒãƒˆã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 MeshOBJ::SubsetList& MeshOBJ::GetSubsets()
 { return m_Subsets; }
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒeƒŠƒAƒ‹‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 MeshOBJ::MaterialDictionary& MeshOBJ::GetMaterials()
 { return m_Materials; }
 
 //-------------------------------------------------------------------------------------------
-//      ’¸“_ƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚µ‚Ü‚·.
+//      é ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 MeshOBJ::IndexList& MeshOBJ::GetIndices()
 { return m_Indices; }
 
 //-------------------------------------------------------------------------------------------
-//      ’¸“_ƒoƒbƒtƒ@‚ğæ“¾‚µ‚Ü‚·.
+//      é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 const MeshOBJ::VertexList& MeshOBJ::GetVertices() const
 { return m_Vertices; }
 
 //-------------------------------------------------------------------------------------------
-//      ƒTƒuƒZƒbƒg‚ğæ“¾‚µ‚Ü‚·.
+//      ã‚µãƒ–ã‚»ãƒƒãƒˆã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 const MeshOBJ::SubsetList& MeshOBJ::GetSubsets() const
 { return m_Subsets; }
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒeƒŠƒAƒ‹‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 const MeshOBJ::MaterialDictionary& MeshOBJ::GetMaterials() const
 { return m_Materials; }
 
 //-------------------------------------------------------------------------------------------
-//      ’¸“_ƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚µ‚Ü‚·.
+//      é ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 const MeshOBJ::IndexList& MeshOBJ::GetIndices() const
 { return m_Indices; }
 
 //-------------------------------------------------------------------------------------------
-//      ƒoƒEƒ“ƒfƒBƒ“ƒOƒ{ƒbƒNƒX‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 BoundingBox MeshOBJ::GetBox() const
 { return m_Box; }
 
 //-------------------------------------------------------------------------------------------
-//      ƒoƒEƒ“ƒfƒBƒ“ƒOƒXƒtƒBƒA‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚¹ãƒ•ã‚£ã‚¢ã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 BoundingSphere MeshOBJ::GetSphere() const
 { return m_Sphere; }

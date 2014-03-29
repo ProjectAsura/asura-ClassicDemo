@@ -1,14 +1,25 @@
-//-------------------------------------------------------------------------------------------
+ï»¿//-------------------------------------------------------------------------------------------
 // File : main.cpp
 // Desc : First Polygon
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------
 
+
+#if defined(DEBUG) || defined(_DEBUG)
+    #define _CRTDBG_MAP_ALLOC
+    #include <crtdbg.h>
+#endif//defined(DEBUG) || defined(_DEBUG)
+
+#if defined(_NDEBUG) || defined(NDEBUG)
+    // ãƒªãƒªãƒ¼ã‚¹ãƒ“ãƒ«ãƒ‰æ™‚ã¯ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã‚’éè¡¨ç¤ºåŒ–.
+    #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+#endif//defined(_NDEBUG) || defined(NDEBUG)
+
 //-------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------
 #include <iostream>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 #include <TgaLoader.h>
 
 
@@ -32,7 +43,7 @@ TgaImage    g_Texture;
 // Forward Declarations.
 //-------------------------------------------------------------------------------------------
 bool    OnInit();
-void    OnTerm( int code );
+void    OnTerm();
 void    OnDisplay();
 void    OnIdle();
 void    OnReshape( int x, int y );
@@ -45,42 +56,49 @@ void    OnSpecial( int key, int x, int y );
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒƒCƒ“ƒGƒ“ƒgƒŠ[ƒ|ƒCƒ“ƒg‚Å‚·.
+//      ãƒ¡ã‚¤ãƒ³ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆã§ã™.
 //-------------------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-    __glutInitWithExit( &argc, argv, OnTerm );
-    glutInitWindowPosition( g_WindowPositionX, g_WindowPositionY );
-    glutInitWindowSize( g_WindowWidth, g_WindowHeight );
-    glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE );
-    __glutCreateWindowWithExit( g_WindowTitle, OnTerm );
-    glutDisplayFunc( OnDisplay );
-    glutReshapeFunc( OnReshape );
-    glutIdleFunc( OnIdle );
-    glutMouseFunc( OnMouse );
-    glutMotionFunc( OnMotion );
-    glutPassiveMotionFunc( OnPassiveMotion );
-    glutKeyboardFunc( OnKeyboard );
-    glutSpecialFunc( OnSpecial );
+#if defined(DEBUG) || defined(_DEBUG)
+    // ãƒ¡ãƒ¢ãƒªãƒªãƒ¼ã‚¯æ¤œå‡º
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif//defined(DEBUG) || defined(_DEBUG)
+    {
+        glutInit( &argc, argv );
+        glutSetOption( GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS );
+        glutInitWindowPosition( g_WindowPositionX, g_WindowPositionY );
+        glutInitWindowSize( g_WindowWidth, g_WindowHeight );
+        glutInitDisplayMode( GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE );
+        glutCreateWindow( g_WindowTitle );
+        glutDisplayFunc( OnDisplay );
+        glutReshapeFunc( OnReshape );
+        glutIdleFunc( OnIdle );
+        glutMouseFunc( OnMouse );
+        glutMotionFunc( OnMotion );
+        glutPassiveMotionFunc( OnPassiveMotion );
+        glutKeyboardFunc( OnKeyboard );
+        glutSpecialFunc( OnSpecial );
 
-    if ( OnInit() )
-    { glutMainLoop(); }
-    else
-    { OnTerm( -1 ); }
+        if ( OnInit() )
+        { glutMainLoop(); }
+
+        OnTerm();
+    }
 
     return 0;
 }
 
 
 //-------------------------------------------------------------------------------------------
-//      ‰Šú‰»ˆ—‚Å‚·.
+//      åˆæœŸåŒ–å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 bool OnInit()
 {
     glClearColor( 0.3f, 0.3f, 1.0f, 1.0f );
     glEnable( GL_DEPTH_TEST );
 
-    char* filename = "../res/sample.tga"; // ƒvƒƒWƒFƒNƒgƒfƒBƒŒƒNƒgƒŠ‚©‚ç‚Ì‘Š‘ÎƒpƒX.
+    char* filename = "../res/sample.tga"; // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‹ã‚‰ã®ç›¸å¯¾ãƒ‘ã‚¹.
 
     if ( !g_Texture.Load( filename ) ) 
     { return false; }
@@ -92,18 +110,17 @@ bool OnInit()
 }
 
 //-------------------------------------------------------------------------------------------
-//      I—¹ˆ—‚Å‚·.
+//      çµ‚äº†å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
-void OnTerm( int code )
+void OnTerm()
 {
     g_Texture.Release();
     g_Texture.DeleteGLTexture();
-    std::exit( code );
 }
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒAƒCƒhƒŠƒ“ƒO‚Ìˆ—‚Å‚·.
+//      ã‚¢ã‚¤ãƒ‰ãƒªãƒ³ã‚°æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnIdle()
 {
@@ -112,7 +129,7 @@ void OnIdle()
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒŠƒTƒCƒY‚Ìˆ—‚Å‚·.
+//      ãƒªã‚µã‚¤ã‚ºæ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnReshape( int x, int y )
 {
@@ -123,21 +140,21 @@ void OnReshape( int x, int y )
 
 
 //-------------------------------------------------------------------------------------------
-//      •`‰æ‚Ìˆ—‚Å‚·.
+//      æç”»æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnDisplay()
 {
-    // ƒoƒbƒtƒ@‚ğƒNƒŠƒA.
+    // ãƒãƒƒãƒ•ã‚¡ã‚’ã‚¯ãƒªã‚¢.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    //@ƒeƒNƒXƒ`ƒƒƒ}ƒbƒsƒ“ƒO—LŒø‰»
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ”ãƒ³ã‚°æœ‰åŠ¹åŒ–
     glEnable(GL_TEXTURE_2D);
-    //@ƒeƒNƒXƒ`ƒƒ‚ğƒoƒCƒ“ƒh
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ãƒã‚¤ãƒ³ãƒ‰
     glBindTexture(GL_TEXTURE_2D, g_Texture.GetID());
-    //@F‚Ìw’è
+    //ã€€è‰²ã®æŒ‡å®š
     glColor4f(1.0, 1.0, 1.0, 1.0);
 
-    //@lŠpŒ`‚ğƒeƒNƒXƒ`ƒƒÀ•W‚Â‚«‚Å•`‰æ
+    //ã€€å››è§’å½¢ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™ã¤ãã§æç”»
     glBegin(GL_QUADS);
     {
         double size = 0.5;
@@ -148,17 +165,17 @@ void OnDisplay()
     }
     glEnd();
 
-    // ƒeƒNƒXƒ`ƒƒ‚ğƒAƒ“ƒoƒCƒ“ƒh.
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰.
     glBindTexture(GL_TEXTURE_2D, 0);
-    //@ƒeƒNƒXƒ`ƒƒƒ}ƒbƒsƒ“ƒO–³Œø‰»
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ”ãƒ³ã‚°ç„¡åŠ¹åŒ–
     glDisable(GL_TEXTURE_2D);
 
-    // ƒRƒ}ƒ“ƒh‚ğÀs‚µ‚ÄCƒoƒbƒtƒ@‚ğŒğŠ·.
+    // ã‚³ãƒãƒ³ãƒ‰ã‚’å®Ÿè¡Œã—ã¦ï¼Œãƒãƒƒãƒ•ã‚¡ã‚’äº¤æ›.
     glutSwapBuffers();
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒEƒX‚Ìƒ{ƒ^ƒ“‰Ÿ‰º‚Ìˆ—‚Å‚·.
+//      ãƒã‚¦ã‚¹ã®ãƒœã‚¿ãƒ³æŠ¼ä¸‹æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnMouse( int button, int state, int x, int y )
 {
@@ -201,29 +218,29 @@ void OnMouse( int button, int state, int x, int y )
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒEƒXƒhƒ‰ƒbƒO‚Ìˆ—‚Å‚·.
+//      ãƒã‚¦ã‚¹ãƒ‰ãƒ©ãƒƒã‚°æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnMotion( int x, int y )
 { /* DO_NOTHING */ }
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒ}ƒEƒXˆÚ“®‚Ìˆ—‚Å‚·.
+//      ãƒã‚¦ã‚¹ç§»å‹•æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnPassiveMotion( int x, int y )
 { /* DO_NOTHING */ }
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒL[ƒ{[ƒh‰Ÿ‰º‚Ìˆ—‚Å‚·.
+//      ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰æŠ¼ä¸‹æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnKeyboard( unsigned char key, int x, int y )
 {
     switch( key )
     {
-    // ESCƒL[.
+    // ESCã‚­ãƒ¼.
     case '\033':
-        { OnTerm( 0 ); }
+        { OnTerm(); }
         break;
 
     default:
@@ -233,7 +250,7 @@ void OnKeyboard( unsigned char key, int x, int y )
 
 
 //-------------------------------------------------------------------------------------------
-//      “ÁêƒL[‰Ÿ‰º‚Ìˆ—‚Å‚·.
+//      ç‰¹æ®Šã‚­ãƒ¼æŠ¼ä¸‹æ™‚ã®å‡¦ç†ã§ã™.
 //-------------------------------------------------------------------------------------------
 void OnSpecial( int key, int x, int y )
 {

@@ -1,4 +1,4 @@
-//-------------------------------------------------------------------------------------------
+ï»¿//-------------------------------------------------------------------------------------------
 // File : BmpLoader.cpp
 // Desc : Bitmap Texture Loader.
 // Copyright(c) Project Asura. All right reserved.
@@ -57,7 +57,7 @@ struct BmpFileHeader
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------
-//      ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 BmpImage::BmpImage()
 : m_ImageSize       ( 0 )
@@ -72,13 +72,13 @@ BmpImage::BmpImage()
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒfƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 BmpImage::~BmpImage()
 { Release(); }
 
 //-------------------------------------------------------------------------------------------
-//      ‰ğ•úˆ—‚ğs‚¢‚Ü‚·.
+//      è§£æ”¾å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void BmpImage::Release()
 {
@@ -97,7 +97,7 @@ void BmpImage::Release()
 }
 
 //-------------------------------------------------------------------------------------------
-//      “Ç‚İ‚İˆ—‚ğs‚¢‚Ü‚·.
+//      èª­ã¿è¾¼ã¿å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool BmpImage::Load(const char *filename)
 {
@@ -106,7 +106,7 @@ bool BmpImage::Load(const char *filename)
     BmpInfoHeader infoHeader;
     BmpFileHeader header;
 
-    // ƒtƒ@ƒCƒ‹‚ğŠJ‚­
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
     errno_t err = fopen_s( &fp, filename, "rb" );
     if ( err != 0 )
     {
@@ -115,10 +115,10 @@ bool BmpImage::Load(const char *filename)
         return false;
     }
 
-    // ƒwƒbƒ_[î•ñ‚Ì“Ç‚İæ‚è
+    // ãƒ˜ãƒƒãƒ€ãƒ¼æƒ…å ±ã®èª­ã¿å–ã‚Š
     fread( &header, sizeof(header), 1, fp );
 
-    // ƒtƒ@ƒCƒ‹ƒ`ƒFƒbƒN
+    // ãƒ•ã‚¡ã‚¤ãƒ«ãƒã‚§ãƒƒã‚¯
     if ( header.bfType != 0x4d42 )
     {
         std::cerr << "Error : Invalid File";
@@ -126,16 +126,16 @@ bool BmpImage::Load(const char *filename)
         return false;
     }
 
-    // ƒwƒbƒ_[î•ñ‚Ì“Ç‚İæ‚è
+    // ãƒ˜ãƒƒãƒ€ãƒ¼æƒ…å ±ã®èª­ã¿å–ã‚Š
     fread( &infoHeader, sizeof(infoHeader), 1, fp );
 
     if ( infoHeader.biSizeImage == 0 )
     { infoHeader.biSizeImage = infoHeader.biWidth * infoHeader.biHeight * 3; }
 
-    // i‚ß‚é.
+    // é€²ã‚ã‚‹.
     fseek( fp, header.bfOffBits, SEEK_SET );
 
-    //@ƒf[ƒ^ƒTƒCƒY‚ğŒˆ’è‚µCƒƒ‚ƒŠ‚ğŠm•Û
+    //ã€€ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚ºã‚’æ±ºå®šã—ï¼Œãƒ¡ãƒ¢ãƒªã‚’ç¢ºä¿
     m_ImageSize  = infoHeader.biSizeImage;
     m_pImageData = new(std::nothrow) unsigned char [m_ImageSize];
     if ( m_pImageData == nullptr )
@@ -145,17 +145,17 @@ bool BmpImage::Load(const char *filename)
         return false;
     }
 
-    // ƒf[ƒ^‚ğİ’è.
+    // ãƒ‡ãƒ¼ã‚¿ã‚’è¨­å®š.
     m_Width          = infoHeader.biWidth;
     m_Height         = infoHeader.biHeight;
     m_BytePerPixel   = 3;
     m_Format         = GL_RGB;
     m_InternalFormat = GL_RGB;
 
-    //@ƒsƒNƒZƒ‹ƒf[ƒ^‚Ì“Ç‚İ‚İ
+    //ã€€ãƒ”ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ã®èª­ã¿è¾¼ã¿
     fread( m_pImageData, 1, infoHeader.biSizeImage, fp );
 
-    //@BGR ¨ RGB‚É•ÏŠ·
+    //ã€€BGR â†’ RGBã«å¤‰æ›
     for ( unsigned int i=0; i<m_ImageSize; i+=m_BytePerPixel )
     {
         unsigned char    temp = m_pImageData[ i + 0 ];
@@ -163,25 +163,25 @@ bool BmpImage::Load(const char *filename)
         m_pImageData[ i + 2 ] = temp;
     }
 
-    //@ƒtƒ@ƒCƒ‹‚ğ•Â‚¶‚é
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‰ã˜ã‚‹
     fclose(fp);
 
-    // ³íI—¹.
+    // æ­£å¸¸çµ‚äº†.
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒ‚ğ¶¬‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool BmpImage::CreateGLTexture()
 {
     if ( m_pImageData == nullptr )
     { return false; }
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğ¶¬
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆ
     glGenTextures(1, &m_ID);
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğƒoƒCƒ“ƒh‚·‚é
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
     glBindTexture(GL_TEXTURE_2D, m_ID);
 
     if ( m_BytePerPixel == 4 )
@@ -189,7 +189,7 @@ bool BmpImage::CreateGLTexture()
     else 
     { glPixelStorei(GL_UNPACK_ALIGNMENT, 1); }
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ÌŠ„‚è“–‚Ä
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®å‰²ã‚Šå½“ã¦
     gluBuild2DMipmaps(
         GL_TEXTURE_2D,
         m_InternalFormat,
@@ -199,21 +199,21 @@ bool BmpImage::CreateGLTexture()
         GL_UNSIGNED_BYTE,
         m_pImageData );
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğŠg‘åEk¬‚·‚é•û–@‚Ìw’è
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’æ‹¡å¤§ãƒ»ç¸®å°ã™ã‚‹æ–¹æ³•ã®æŒ‡å®š
     glTexParameteri(GL_TEXTURE_2D, 	GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, 	GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-    //@ƒeƒNƒXƒ`ƒƒŠÂ‹«
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ç’°å¢ƒ
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-    // ƒAƒ“ƒoƒCƒ“ƒh‚µ‚Ä‚¨‚­.
+    // ã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰ã—ã¦ãŠã.
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒ‚ğ”jŠü‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç ´æ£„ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void BmpImage::DeleteGLTexture()
 {
@@ -225,7 +225,7 @@ void BmpImage::DeleteGLTexture()
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒID‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 unsigned int BmpImage::GetID() const
 { return m_ID; }

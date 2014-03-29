@@ -1,4 +1,4 @@
-//-------------------------------------------------------------------------------------------
+ï»¿//-------------------------------------------------------------------------------------------
 // File : TgaLoader.cpp
 // Desc : Targa Texture Loader.
 // Copyright(c) Project Asura. All right reserved.
@@ -15,25 +15,25 @@
 
 namespace /* anonymous */ {
 
-#pragma pack(push, 1)   // ƒpƒfƒBƒ“ƒO‚ÅƒTƒCƒY‚ª‚¸‚ê‚é‚Ì‚ğ–h‚®.
+#pragma pack(push, 1)   // ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã§ã‚µã‚¤ã‚ºãŒãšã‚Œã‚‹ã®ã‚’é˜²ã.
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // TgaHeader structure
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct TgaHeader
 {
-    unsigned char   IDLength;           //!< ID‚Ì’·‚³.
-    unsigned char   ColorMapType;       //!< ƒJƒ‰[ƒ}ƒbƒvƒ^ƒCƒv.
-    unsigned char   ImageType;          //!< ƒCƒ[ƒWƒ^ƒCƒv.
-    unsigned short  ColorMapOrigin;     //!< Å‰‚ÌƒJƒ‰[ƒ}ƒbƒvƒGƒ“ƒgƒŠ[‚ÌƒCƒ“ƒfƒbƒNƒX.
-    unsigned short  ColorMapLength;     //!< ƒJƒ‰[ƒ}ƒbƒvƒGƒ“ƒgƒŠ[‚Ì”.
-    unsigned char   ColorMapDepth;      //!< ŠeƒJƒ‰[ƒ}ƒbƒvƒGƒ“ƒgƒŠ[‚Ìƒrƒbƒg”.
-    unsigned short  ImageOriginX;       //!< ‰æ‘œ‚ÌŒ´“_(X•ûŒü).
-    unsigned short  ImageOriginY;       //!< ‰æ‘œ‚ÌŒ´“_(Y•ûŒü).
-    unsigned short  ImageWidth;         //!< ‰æ‘œ‚Ì‰¡•.
-    unsigned short  ImageHeight;        //!< ‰æ‘œ‚Ìc•.
-    unsigned char   BitPerPixel;        //!< 1ƒsƒNƒZƒ‹“–‚½‚è‚Ìƒrƒbƒg”.
-    unsigned char   Descriptor;         //!< ‹Lqq.
+    unsigned char   IDLength;           //!< IDã®é•·ã•.
+    unsigned char   ColorMapType;       //!< ã‚«ãƒ©ãƒ¼ãƒãƒƒãƒ—ã‚¿ã‚¤ãƒ—.
+    unsigned char   ImageType;          //!< ã‚¤ãƒ¡ãƒ¼ã‚¸ã‚¿ã‚¤ãƒ—.
+    unsigned short  ColorMapOrigin;     //!< æœ€åˆã®ã‚«ãƒ©ãƒ¼ãƒãƒƒãƒ—ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹.
+    unsigned short  ColorMapLength;     //!< ã‚«ãƒ©ãƒ¼ãƒãƒƒãƒ—ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã®æ•°.
+    unsigned char   ColorMapDepth;      //!< å„ã‚«ãƒ©ãƒ¼ãƒãƒƒãƒ—ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã®ãƒ“ãƒƒãƒˆæ•°.
+    unsigned short  ImageOriginX;       //!< ç”»åƒã®åŸç‚¹(Xæ–¹å‘).
+    unsigned short  ImageOriginY;       //!< ç”»åƒã®åŸç‚¹(Yæ–¹å‘).
+    unsigned short  ImageWidth;         //!< ç”»åƒã®æ¨ªå¹….
+    unsigned short  ImageHeight;        //!< ç”»åƒã®ç¸¦å¹….
+    unsigned char   BitPerPixel;        //!< 1ãƒ”ã‚¯ã‚»ãƒ«å½“ãŸã‚Šã®ãƒ“ãƒƒãƒˆæ•°.
+    unsigned char   Descriptor;         //!< è¨˜è¿°å­.
 };
 
 #pragma pack(pop)
@@ -46,7 +46,7 @@ struct TgaHeader
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------
-//      ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 TgaImage::TgaImage()
 : m_ImageSize       ( 0 )
@@ -61,13 +61,13 @@ TgaImage::TgaImage()
 
 
 //-------------------------------------------------------------------------------------------
-//      ƒfƒXƒgƒ‰ƒNƒ^‚Å‚·.
+//      ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã™.
 //-------------------------------------------------------------------------------------------
 TgaImage::~TgaImage()
 { Release(); }
 
 //-------------------------------------------------------------------------------------------
-//      ‰ğ•úˆ—‚ğs‚¢‚Ü‚·.
+//      è§£æ”¾å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void TgaImage::Release()
 {
@@ -86,14 +86,14 @@ void TgaImage::Release()
 }
 
 //-------------------------------------------------------------------------------------------
-//      “Ç‚İ‚İˆ—‚ğs‚¢‚Ü‚·.
+//      èª­ã¿è¾¼ã¿å‡¦ç†ã‚’è¡Œã„ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool TgaImage::Load(const char *filename)
 {
     FILE *fp;
     TgaHeader header;
 
-    //@ƒtƒ@ƒCƒ‹‚ğŠJ‚­
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
     errno_t err = fopen_s( &fp, filename, "rb");
     if ( err != 0 )
     {
@@ -102,20 +102,20 @@ bool TgaImage::Load(const char *filename)
         return false;
     }
 
-    //@ƒwƒbƒ_[î•ñ‚Ì“Ç‚İ‚İ
+    //ã€€ãƒ˜ãƒƒãƒ€ãƒ¼æƒ…å ±ã®èª­ã¿è¾¼ã¿
     fread(&header, sizeof(header), 1, fp);
 
-    //@•‚Æ‚‚³‚ğŒˆ‚ß‚é
+    //ã€€å¹…ã¨é«˜ã•ã‚’æ±ºã‚ã‚‹
     m_Width  = header.ImageWidth;
     m_Height = header.ImageHeight;
 
-    //@24 bit
+    //ã€€24 bit
     if ( header.BitPerPixel == 24 )
     {
         m_Format = GL_RGB;
         m_InternalFormat = GL_RGB;
     }
-    //@32 bit
+    //ã€€32 bit
     else if ( header.BitPerPixel == 32 )
     {
         m_Format = GL_RGBA;
@@ -127,13 +127,13 @@ bool TgaImage::Load(const char *filename)
         return false;
     }
 
-    // 1ƒsƒNƒZƒ‹“–‚½‚è‚ÌƒoƒCƒg”.
+    // 1ãƒ”ã‚¯ã‚»ãƒ«å½“ãŸã‚Šã®ãƒã‚¤ãƒˆæ•°.
     m_BytePerPixel = header.BitPerPixel / 8;
 
-    //@ƒf[ƒ^ƒTƒCƒY‚ÌŒˆ’è
+    //ã€€ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚ºã®æ±ºå®š
     m_ImageSize = m_Width * m_Height * m_BytePerPixel;
 
-    //@ƒƒ‚ƒŠ‚ğŠm•Û
+    //ã€€ãƒ¡ãƒ¢ãƒªã‚’ç¢ºä¿
     m_pImageData = new(std::nothrow) unsigned char[ m_ImageSize ];
     if ( m_pImageData == nullptr )
     {
@@ -142,10 +142,10 @@ bool TgaImage::Load(const char *filename)
         return false;
     }
 
-    //@ƒeƒNƒZƒ‹ƒf[ƒ^‚ğˆê‹C‚É“Ç‚İæ‚è
+    //ã€€ãƒ†ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ã‚’ä¸€æ°—ã«èª­ã¿å–ã‚Š
     fread( m_pImageData, sizeof(unsigned char), m_ImageSize, fp );
 
-    //@BGR(A)‚ğRGB(A)‚ÉƒRƒ“ƒo[ƒg
+    //ã€€BGR(A)ã‚’RGB(A)ã«ã‚³ãƒ³ãƒãƒ¼ãƒˆ
     for ( unsigned int i=0; i<m_ImageSize; i+=m_BytePerPixel )
     {
         unsigned char    temp = m_pImageData[ i + 0 ];
@@ -153,25 +153,25 @@ bool TgaImage::Load(const char *filename)
         m_pImageData[ i + 2 ] = temp;
     }
 
-    //@ƒtƒ@ƒCƒ‹‚ğ•Â‚¶‚é
+    //ã€€ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‰ã˜ã‚‹
     fclose(fp);
 
-    // ³íI—¹.
+    // æ­£å¸¸çµ‚äº†.
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒ‚ğ¶¬‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 bool TgaImage::CreateGLTexture()
 {
     if ( m_pImageData == nullptr )
     { return false; }
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğ¶¬
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆ
     glGenTextures(1, &m_ID);
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğƒoƒCƒ“ƒh‚·‚é
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
     glBindTexture(GL_TEXTURE_2D, m_ID);
 
     if ( m_BytePerPixel == 4 )
@@ -179,7 +179,7 @@ bool TgaImage::CreateGLTexture()
     else 
     { glPixelStorei(GL_UNPACK_ALIGNMENT, 1); }
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ÌŠ„‚è“–‚Ä
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®å‰²ã‚Šå½“ã¦
     gluBuild2DMipmaps(
         GL_TEXTURE_2D,
         m_InternalFormat,
@@ -189,21 +189,21 @@ bool TgaImage::CreateGLTexture()
         GL_UNSIGNED_BYTE,
         m_pImageData );
 
-    //@ƒeƒNƒXƒ`ƒƒ‚ğŠg‘åEk¬‚·‚é•û–@‚Ìw’è
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’æ‹¡å¤§ãƒ»ç¸®å°ã™ã‚‹æ–¹æ³•ã®æŒ‡å®š
     glTexParameteri(GL_TEXTURE_2D, 	GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, 	GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-    //@ƒeƒNƒXƒ`ƒƒŠÂ‹«
+    //ã€€ãƒ†ã‚¯ã‚¹ãƒãƒ£ç’°å¢ƒ
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-    // ƒAƒ“ƒoƒCƒ“ƒh‚µ‚Ä‚¨‚­.
+    // ã‚¢ãƒ³ãƒã‚¤ãƒ³ãƒ‰ã—ã¦ãŠã.
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return true;
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒ‚ğ”jŠü‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç ´æ£„ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 void TgaImage::DeleteGLTexture()
 {
@@ -215,7 +215,7 @@ void TgaImage::DeleteGLTexture()
 }
 
 //-------------------------------------------------------------------------------------------
-//      ƒeƒNƒXƒ`ƒƒID‚ğæ“¾‚µ‚Ü‚·.
+//      ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’å–å¾—ã—ã¾ã™.
 //-------------------------------------------------------------------------------------------
 unsigned int TgaImage::GetID() const
 { return m_ID; }
