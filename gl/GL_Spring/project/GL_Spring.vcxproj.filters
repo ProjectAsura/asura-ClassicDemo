@@ -18,17 +18,11 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Mouse.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Spring.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\Mouse.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\TinyMath.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

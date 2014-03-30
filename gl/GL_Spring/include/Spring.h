@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------
+ï»¿//------------------------------------------------------------------------------------------
 // File : Spring.h
 // Desc : Spring Simulator Module.
 // Copyright(c) Project Asura. All right reserved.
@@ -18,8 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 enum SIMULATION_TYPE
 {
-    SIMULATION_TYPE_EXPLICIT_EULAR = 0,     //!< —z“IƒIƒCƒ‰[–@.
-    SIMULATION_TYPE_VERLET,                 //!< ƒxƒ‹ƒŒ–@.
+    SIMULATION_TYPE_EXPLICIT_EULAR = 0,     //!< é™½çš„ã‚ªã‚¤ãƒ©ãƒ¼æ³•.
+    SIMULATION_TYPE_VERLET,                 //!< ãƒ™ãƒ«ãƒ¬æ³•.
 };
 
 
@@ -66,18 +66,18 @@ protected:
     //======================================================================================
     // protected variables.
     //======================================================================================
-    double  m_Mass;             //!< Ž¿—Ê‚Å‚·.
-    double  m_Gravity;          //!< d—Í‰Á‘¬“x‚Å‚·.
-    double  m_TimeStep;         //!< ”÷¬ŽžŠÔ‚Å‚·.
-    double  m_Length;           //!< Ž©‘R’·‚Å‚·.
-    double  m_ConstantK;        //!< ‚Î‚Ë’è”‚Å‚·.
-    double  m_InitAccel;        //!< ‰Šú‰Á‘¬“x‚Å‚·.
-    double  m_InitVelocity;     //!< ‰Šú‘¬“x‚Å‚·.
-    double  m_InitPosition;     //!< ‰ŠúˆÊ’u‚Å‚·.
-    double  m_Accel;            //!< ‰Á‘¬“x‚Å‚·.
-    double  m_Velocity;         //!< ‘¬“x‚Å‚·.
-    double  m_Position;         //!< ˆÊ’u‚Å‚·.
-    double  m_Force;            //!< —Í‚Å‚·.
+    double  m_Mass;             //!< è³ªé‡ã§ã™.
+    double  m_Gravity;          //!< é‡åŠ›åŠ é€Ÿåº¦ã§ã™.
+    double  m_TimeStep;         //!< å¾®å°æ™‚é–“ã§ã™.
+    double  m_Length;           //!< è‡ªç„¶é•·ã§ã™.
+    double  m_ConstantK;        //!< ã°ã­å®šæ•°ã§ã™.
+    double  m_InitAccel;        //!< åˆæœŸåŠ é€Ÿåº¦ã§ã™.
+    double  m_InitVelocity;     //!< åˆæœŸé€Ÿåº¦ã§ã™.
+    double  m_InitPosition;     //!< åˆæœŸä½ç½®ã§ã™.
+    double  m_Accel;            //!< åŠ é€Ÿåº¦ã§ã™.
+    double  m_Velocity;         //!< é€Ÿåº¦ã§ã™.
+    double  m_Position;         //!< ä½ç½®ã§ã™.
+    double  m_Force;            //!< åŠ›ã§ã™.
     double  m_PrevPosition;
 
     //======================================================================================
@@ -96,8 +96,8 @@ private:
     //======================================================================================
     // private methods.
     //======================================================================================
-    Spring1D        ( const Spring1D& value );  // ƒAƒNƒZƒX‹ÖŽ~.
-    void operator = ( const Spring1D& value );  // ƒAƒNƒZƒX‹ÖŽ~.
+    Spring1D        ( const Spring1D& value );  // ã‚¢ã‚¯ã‚»ã‚¹ç¦æ­¢.
+    void operator = ( const Spring1D& value );  // ã‚¢ã‚¯ã‚»ã‚¹ç¦æ­¢.
 };
 
 

@@ -12,11 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\Mouse.cpp" />
     <ClCompile Include="..\src\Spring.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\Mouse.h" />
     <ClInclude Include="..\include\Spring.h" />
     <ClInclude Include="..\include\TinyMath.h" />
   </ItemGroup>
